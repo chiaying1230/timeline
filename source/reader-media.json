@@ -1,0 +1,7 @@
+{
+  "items": [
+    {"id":"sample-photo","kind":"photo","sample":true,"events":["n0","q1","l3"],"src":"assets/sample-learning-room.png","title":"學習空間照片示意","alt":"AI 生成示意照片：明亮的空教室內有木桌、椅子與書架；非歷史原件。","caption":"AI 生成的當代學習空間。僅示範照片與圖說的呈現，不是這個事件的照片。"},
+    {"id":"sample-clip","kind":"clip","sample":true,"events":["n0","q1","l3"],"allNews":true,"src":"assets/sample-newspaper.png","title":"報紙剪報版面示意","alt":"剪報版面示意圖，上方寫有剪報版面示意及示意、非歷史原件，下方為印刷欄位。","caption":"AI 生成的剪報版面示意，不是本篇剪報的掃描圖。報別、日期、整理標題及編碼取自實際資料。","text":"這裡示範日後放入經授權的剪報內文。尚未提供原件全文，不能由標題或編碼補寫新聞內容。"},
+    {"id":"sample-audio","kind":"audio","sample":true,"events":["n0","q1","l3"],"src":"assets/sample-audio.wav","title":"錄音與逐字稿示例","caption":"英文合成語音，非真人訪談，也不是歷史錄音。示範播放、拖曳進度、調整速度及逐字稿跳轉。","segments":[{"time":0,"text":"This is a sample recording for the event tree website.","translation":"這是事件樹網站的示範錄音。"},{"time":4.6,"text":"It demonstrates audio playback and a transcript.","translation":"示範錄音播放與逐字稿。"},{"time":8.6,"text":"This is not an interview or a historical recording.","translation":"這不是訪談，也不是歷史錄音。"}]}
+  ]
+}
