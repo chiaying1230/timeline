@@ -12,7 +12,25 @@
   function pauseAudio(root=document){all('audio',root).forEach(a=>a.pause());}
   function savePrefs(){try{localStorage.setItem('history-timeline.preferences.v1',JSON.stringify({easy:state.easy,large:state.large}));}catch{}}
   function applyPrefs(){document.documentElement.classList.toggle('large-text',state.large);all('.easy-section').forEach(n=>n.hidden=!state.easy);all('.full-description').forEach(n=>n.open=!state.easy);el('easyToggle').checked=state.easy;el('largeToggle').checked=state.large;}
-  function capturePosition(){if(state.mode!=='read')return;const v=el('timelineViewport');state.scroll=v.scrollLeft;state.pageScroll=window.scrollY;const left=v.getBoundingClientRect().left;if(state.view==='list'&&el('timeline').getBoundingClientRect().top>100)return;const items=all('#timeline>li');const first=state.view==='list'?items.find(n=>n.getBoundingClientRect().bottom>100):items.find(n=>n.getBoundingClientRect().right>left+20);if(first)state.anchor=first.dataset.event;}
+  function capturePosition(){
+    if(state.mode !== 'read') return;
+    const viewport = el('timelineViewport');
+    state.scroll = viewport.scrollLeft;
+    state.pageScroll = window.scrollY;
+    const items = all('#timeline>li');
+    if(state.view === 'list'){
+      if(el('timeline').getBoundingClientRect().top > 100) return;
+      const first = items.find(item => item.getBoundingClientRect().bottom > 100);
+      if(first) state.anchor = first.dataset.event;
+      return;
+    }
+    const left = viewport.getBoundingClientRect().left + viewport.clientLeft;
+    const selected = items.find(item => item.dataset.event === state.anchor)?.getBoundingClientRect();
+    // Several events can share the last page. Keep a search or shared-link target there.
+    if(selected && selected.left >= left - 1 && selected.right <= left + viewport.clientWidth + 1) return;
+    const first = items.find(item => item.getBoundingClientRect().right > left + 1);
+    if(first) state.anchor = first.dataset.event;
+  }
   function mode(next,{history=true,focus=true}={}) {
     capturePosition();pauseAudio();state.mode=next;document.body.dataset.mode=next;
     Object.entries(modes).forEach(([key,id])=>el(id).hidden=key!==next);
@@ -90,7 +108,16 @@
   });}
   el('timeline').addEventListener('toggle',e=>{if(!e.target.matches('.event-details'))return;const d=e.target;if(d.open)state.open.add(d.dataset.ev);else{state.open.delete(d.dataset.ev);pauseAudio(d);}queueSave();},true);
   function syncNav(){const v=el('timelineViewport');el('earlier').disabled=!lastList.length||v.scrollLeft<=2;el('later').disabled=!lastList.length||v.scrollLeft>=v.scrollWidth-v.clientWidth-2;syncPosition();}
-  function move(direction){const v=el('timelineViewport'),width=el('timeline').firstElementChild?.getBoundingClientRect().width||272;v.scrollBy({left:direction*(width+Number.parseFloat(getComputedStyle(el('timeline')).gap||'32'))*Math.max(1,Math.floor(v.clientWidth/(width+Number.parseFloat(getComputedStyle(el('timeline')).gap||'32')))-1),behavior:calm()?'instant':'smooth'});}
+  function move(direction){
+    const viewport = el('timelineViewport');
+    const track = el('timeline');
+    const first = track.firstElementChild;
+    if(!first || state.view !== 'timeline') return;
+    const step = first.getBoundingClientRect().width + parseFloat(getComputedStyle(track).columnGap);
+    const perPage = Number(getComputedStyle(track).getPropertyValue('--cards')) || 1;
+    viewport.scrollTop = 0;
+    viewport.scrollBy({left:direction * perPage * step, behavior:calm()?'instant':'smooth'});
+  }
   el('earlier').addEventListener('click',()=>move(-1));el('later').addEventListener('click',()=>move(1));
   el('timelineViewport').addEventListener('scroll',()=>{cancelAnimationFrame(scrollFrame);scrollFrame=requestAnimationFrame(()=>{capturePosition();syncNav();queueSave();});},{passive:true});
   el('timelineViewport').addEventListener('keydown',e=>{if(e.target!==el('timelineViewport'))return;if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();move(e.key==='ArrowRight'?1:-1);}});
@@ -143,7 +170,7 @@
   document.addEventListener('change',e=>{if(e.target.dataset.audioSpeed){const a=el(e.target.dataset.audioSpeed);if(a)a.playbackRate=Number(e.target.value);}});
   all('dialog').forEach(dialog=>dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}}));
 
-  function offsetFor(id){const item=all('#timeline>li').find(n=>n.dataset.event===id);return item?Math.max(0,item.offsetLeft-8):0;}
+  function offsetFor(id){const item=all('#timeline>li').find(n=>n.dataset.event===id);return item?.offsetLeft || 0;}
   function snapshot(){return D.readingState({filters:state.applied,anchor:state.anchor,open:[...state.open],view:state.view});}
   function writeLocation(){
     if(restoring)return;
@@ -185,7 +212,7 @@
     if(expand){detail.open=true;state.open.add(id);}
     const behavior='instant';
     if(state.view==='list'){item.scrollIntoView({block:'start',behavior});}
-    else {state.scroll=offsetFor(id);el('timelineViewport').scrollTo({left:state.scroll,behavior});}
+    else {state.scroll=offsetFor(id);el('timelineViewport').scrollTo({left:state.scroll,top:0,behavior});}
     if(focus)detail.querySelector('summary').focus({preventScroll:true});syncPosition({forceFollow:true});queueSave();
   }
   function setView(view){

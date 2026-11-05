@@ -115,6 +115,137 @@ main { padding: 0 0 3rem; }
   .site-header nav, .reader-actions { display: none; }
   .site-header, main { width: 100%; }
 }
+
+/* Size the track to the reading pane, including at large text sizes. */
+@media screen {
+  body:not(.list-view) .timeline-viewport {
+    container-type: inline-size;
+    padding: 6px 0 12px;
+    scroll-padding-inline: 0;
+    scroll-snap-type: x mandatory;
+  }
+  body:not(.list-view) .timeline {
+    --cards: 1;
+    --card-gap: 1rem;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - (var(--cards) - 1) * var(--card-gap)) / var(--cards));
+    width: 100%;
+    min-height: 0;
+    gap: var(--card-gap);
+    padding: 0;
+  }
+  @container (min-width: 39em) { body:not(.list-view) .timeline { --cards: 2; } }
+  @container (min-width: 60em) { body:not(.list-view) .timeline { --cards: 3; } }
+  @container (min-width: 80em) { body:not(.list-view) .timeline { --cards: 4; } }
+  body:not(.list-view) .timeline > li {
+    width: auto;
+    min-width: 0;
+    padding-inline: 8px;
+    scroll-margin: 0;
+    scroll-snap-align: start;
+  }
+  body:not(.list-view) .timeline::before { display: none; }
+  body:not(.list-view) .timeline > li::before {
+    content: "";
+    position: absolute;
+    inset: 46px calc(-1 * var(--card-gap)) auto 8px;
+    border-top: 1px solid var(--line);
+  }
+  body:not(.list-view) .timeline > li:last-child::before { right: 8px; }
+}
+@media screen and (min-width: 56em) {
+  .site-header { padding-block: .45rem; }
+  .site-footer { padding-block: .45rem; gap: 1rem; }
+  main { padding-bottom: 1rem; }
+  .masthead h1, body[data-mode=read] .masthead h1 { font-size: 1.6rem; }
+  .reader-heading { padding: .75rem 0; }
+  .reader-heading h2, .selection-intro h2 { font-size: 1.45rem; }
+  .decade-nav button { min-width: 6rem; padding: .35rem .75rem; }
+  .reading-position { margin-top: .45rem; }
+  .reading-hint { margin: 0 0 .5rem; }
+  .event-meta { margin-bottom: .45rem; }
+  .event-meta > span:first-child { font-size: 1.4rem; }
+  .event-title { font-size: 1.15rem; }
+  #selection { grid-template-columns: minmax(12rem, 1fr) minmax(0, 2.8fr); }
+  .selection-intro, .selection-form { padding-block: 1rem; min-width: 0; }
+  .selection-form { padding-left: clamp(1.25rem, 3vw, 2.5rem); }
+  #filterForm fieldset { min-width: 0; margin: .7rem 0; }
+  #filterForm legend { margin-bottom: .35rem; }
+  .choices { gap: .4rem; }
+  .choices label { min-height: 44px; padding: .3rem .65rem; gap: .4rem; }
+  .types { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .choice-actions { margin-top: 0; }
+  .filter-result {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .5rem 1rem;
+    padding-top: .65rem;
+    border-top: 1px solid var(--line);
+  }
+  .filter-preview { padding: 0; border: 0; }
+  .filter-preview .help { margin: 0; }
+  .filter-result .form-actions { margin: 0; }
+  .filter-result .primary { min-width: 7rem; padding-block: .4rem; }
+}
+/* Keep navigation on screen. A long open event scrolls inside the reader.
+   Short windows, zoomed layouts and the vertical list use normal page flow. */
+@media screen and (min-width: 56em) and (min-height: 36em) {
+  html:not(.large-text) body:is([data-mode=select], [data-mode=read]:not(.list-view)) {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+  }
+  html:not(.large-text) body:is([data-mode=select], [data-mode=read]:not(.list-view)) main {
+    flex: 1;
+    min-height: 0;
+    margin-block: 0;
+    padding-block: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  body[data-mode=select] #selection { overflow-y: auto; }
+  body[data-mode=read]:not(.list-view) #reader {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+  }
+  #reader > :not(.timeline-viewport) { flex: none; }
+  body[data-mode=read]:not(.list-view) .timeline-viewport {
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    min-height: 0;
+  }
+  body[data-mode=read] .related-reading { margin: .5rem 0; padding-top: .5rem; }
+}
+
+/* Use the space above the cards for navigation, leaving room for the text below. */
+.reading-position .reading-hint { margin: 0; font-size: .875rem; font-weight: 400; }
+@media screen and (min-width: 56em) {
+  .reader-heading > div:first-child { display: flex; align-items: baseline; flex-wrap: wrap; gap: .3rem 1rem; }
+  .reading-position { margin-block: .4rem; }
+  .reading-position .move-controls { margin-left: auto; }
+  body:not(.list-view) .decade-label { display: none; }
+  body:not(.list-view) .timeline > li::before { top: 14px; }
+  body:not(.list-view) .event-body { margin-top: .6rem; padding-top: .6rem; }
+  body:not(.list-view) .event-body :is(.event-date, .draft-label, .easy-text p) { margin-bottom: .4rem; }
+  body:not(.list-view) .event-body .more { margin-top: .4rem; }
+  body:not(.list-view) .event-actions { margin-top: .45rem; padding-top: .25rem; }
+}
+@media screen and (max-width: 55.999em) {
+  .reading-position { flex-wrap: wrap; }
+  .reading-position .reading-hint { order: 1; flex-basis: 100%; margin: 0 0 .65rem; }
+}
+@media screen and (min-width: 56em) and (max-height: 44em) {
+  .site-header, .site-footer { padding-block: .15rem; }
+  .reader-heading { padding-block: .3rem; }
+  .decade-nav button { text-align: center; padding-inline: .35rem; }
+  .decade-nav button span { display: inline; margin-left: .5em; }
+  #filterForm fieldset { margin-block: .5rem; }
+}
 </style></head><body>
 <noscript><p>請開啟 JavaScript 以使用篩選與年表。原始資料與整理方式也可在本網站的 README 閱讀。</p></noscript>
 <a class="skip" href="#content">跳到主要內容</a>
@@ -138,7 +269,10 @@ main { padding: 0 0 3rem; }
 <form id="filterForm"><fieldset><legend><span class="step">01</span>年代 <small>可複選；不選就是全部年代</small></legend><div id="decadeOptions" class="choices decades"></div></fieldset>
 <fieldset><legend><span class="step">02</span>事件類型 <small>可複選</small></legend><div id="typeOptions" class="choices types"></div><div class="choice-actions"><button type="button" class="text-button" id="selectAllTypes">選取全部類型</button><button type="button" class="text-button" id="onlyNews">只看剪報</button></div></fieldset>
 <fieldset id="wordField" hidden><legend><span class="step">03</span>新聞用語 <small>符合任一所選用語即可</small></legend><p class="help">這些是報紙當年的用詞，可能帶有歧視。保留原詞，方便查找歷史資料。</p><div id="wordOptions" class="choices words"></div></fieldset>
-<div class="filter-preview"><p id="filterCount" role="status" aria-live="polite"></p><p id="filterPreview" class="help"></p></div><div class="form-actions"><button class="primary" type="submit" id="applyButton">開始閱讀 →</button><button type="button" id="cancelFilters" hidden>取消調整</button></div></form></div></section>
+<div class="filter-result">
+  <div class="filter-preview"><p id="filterCount" role="status" aria-live="polite"></p><p id="filterPreview" class="help"></p></div>
+  <div class="form-actions"><button class="primary" type="submit" id="applyButton">開始閱讀 →</button><button type="button" id="cancelFilters" hidden>取消調整</button></div>
+</div></form></div></section>
 <section id="reader" hidden aria-label="精選年表">
 <div class="reader-controls">
   <div class="reader-heading">
@@ -152,7 +286,7 @@ main { padding: 0 0 3rem; }
   </div>
   <nav id="decadeNav" class="decade-nav" aria-label="跳到年代"></nav>
 </div>
-<div class="reading-position"><p id="positionLabel" aria-live="off"></p><div class="move-controls"><button type="button" id="earlier" aria-label="移到較早的事件">← 較早</button><button type="button" id="later" aria-label="移到較晚的事件">較晚 →</button></div></div><p class="help reading-hint" id="readingHint">向右閱讀，點年份或標題展開介紹。等距排列，間距不代表經過的年數。</p>
+<div class="reading-position"><p id="positionLabel" aria-live="off"></p><p class="help reading-hint" id="readingHint">向右閱讀，點年份或標題展開介紹。等距排列，間距不代表經過的年數。</p><div class="move-controls"><button type="button" id="earlier" aria-label="移到較早的事件">← 較早</button><button type="button" id="later" aria-label="移到較晚的事件">較晚 →</button></div></div>
 <div id="timelineViewport" class="timeline-viewport" role="region" aria-label="可左右捲動的精選年表" tabindex="0"><ol id="timeline" class="timeline"></ol></div>
 <div id="readerEmpty" class="empty" hidden><p class="section-index">沒有符合的事件</p><h2>換個範圍，繼續找。</h2><p>可以減少年代或用語限制。完整剪報中仍可能有符合的資料。</p><button type="button" data-action="edit">調整篩選</button><button type="button" id="emptyReset">看全部 50 件</button></div>
 <div id="allNewsLink" class="related-reading" hidden><div><h2>繼續查閱完整剪報</h2><p id="relatedNewsCount"></p></div><button type="button" id="openFilteredNews">查看所有符合的剪報 →</button></div></section>
@@ -527,7 +661,25 @@ const ReaderData = (() => {
   function pauseAudio(root=document){all('audio',root).forEach(a=>a.pause());}
   function savePrefs(){try{localStorage.setItem('history-timeline.preferences.v1',JSON.stringify({easy:state.easy,large:state.large}));}catch{}}
   function applyPrefs(){document.documentElement.classList.toggle('large-text',state.large);all('.easy-section').forEach(n=>n.hidden=!state.easy);all('.full-description').forEach(n=>n.open=!state.easy);el('easyToggle').checked=state.easy;el('largeToggle').checked=state.large;}
-  function capturePosition(){if(state.mode!=='read')return;const v=el('timelineViewport');state.scroll=v.scrollLeft;state.pageScroll=window.scrollY;const left=v.getBoundingClientRect().left;if(state.view==='list'&&el('timeline').getBoundingClientRect().top>100)return;const items=all('#timeline>li');const first=state.view==='list'?items.find(n=>n.getBoundingClientRect().bottom>100):items.find(n=>n.getBoundingClientRect().right>left+20);if(first)state.anchor=first.dataset.event;}
+  function capturePosition(){
+    if(state.mode !== 'read') return;
+    const viewport = el('timelineViewport');
+    state.scroll = viewport.scrollLeft;
+    state.pageScroll = window.scrollY;
+    const items = all('#timeline>li');
+    if(state.view === 'list'){
+      if(el('timeline').getBoundingClientRect().top > 100) return;
+      const first = items.find(item => item.getBoundingClientRect().bottom > 100);
+      if(first) state.anchor = first.dataset.event;
+      return;
+    }
+    const left = viewport.getBoundingClientRect().left + viewport.clientLeft;
+    const selected = items.find(item => item.dataset.event === state.anchor)?.getBoundingClientRect();
+    // Several events can share the last page. Keep a search or shared-link target there.
+    if(selected && selected.left >= left - 1 && selected.right <= left + viewport.clientWidth + 1) return;
+    const first = items.find(item => item.getBoundingClientRect().right > left + 1);
+    if(first) state.anchor = first.dataset.event;
+  }
   function mode(next,{history=true,focus=true}={}) {
     capturePosition();pauseAudio();state.mode=next;document.body.dataset.mode=next;
     Object.entries(modes).forEach(([key,id])=>el(id).hidden=key!==next);
@@ -605,7 +757,16 @@ const ReaderData = (() => {
   });}
   el('timeline').addEventListener('toggle',e=>{if(!e.target.matches('.event-details'))return;const d=e.target;if(d.open)state.open.add(d.dataset.ev);else{state.open.delete(d.dataset.ev);pauseAudio(d);}queueSave();},true);
   function syncNav(){const v=el('timelineViewport');el('earlier').disabled=!lastList.length||v.scrollLeft<=2;el('later').disabled=!lastList.length||v.scrollLeft>=v.scrollWidth-v.clientWidth-2;syncPosition();}
-  function move(direction){const v=el('timelineViewport'),width=el('timeline').firstElementChild?.getBoundingClientRect().width||272;v.scrollBy({left:direction*(width+Number.parseFloat(getComputedStyle(el('timeline')).gap||'32'))*Math.max(1,Math.floor(v.clientWidth/(width+Number.parseFloat(getComputedStyle(el('timeline')).gap||'32')))-1),behavior:calm()?'instant':'smooth'});}
+  function move(direction){
+    const viewport = el('timelineViewport');
+    const track = el('timeline');
+    const first = track.firstElementChild;
+    if(!first || state.view !== 'timeline') return;
+    const step = first.getBoundingClientRect().width + parseFloat(getComputedStyle(track).columnGap);
+    const perPage = Number(getComputedStyle(track).getPropertyValue('--cards')) || 1;
+    viewport.scrollTop = 0;
+    viewport.scrollBy({left:direction * perPage * step, behavior:calm()?'instant':'smooth'});
+  }
   el('earlier').addEventListener('click',()=>move(-1));el('later').addEventListener('click',()=>move(1));
   el('timelineViewport').addEventListener('scroll',()=>{cancelAnimationFrame(scrollFrame);scrollFrame=requestAnimationFrame(()=>{capturePosition();syncNav();queueSave();});},{passive:true});
   el('timelineViewport').addEventListener('keydown',e=>{if(e.target!==el('timelineViewport'))return;if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();move(e.key==='ArrowRight'?1:-1);}});
@@ -658,7 +819,7 @@ const ReaderData = (() => {
   document.addEventListener('change',e=>{if(e.target.dataset.audioSpeed){const a=el(e.target.dataset.audioSpeed);if(a)a.playbackRate=Number(e.target.value);}});
   all('dialog').forEach(dialog=>dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}}));
 
-  function offsetFor(id){const item=all('#timeline>li').find(n=>n.dataset.event===id);return item?Math.max(0,item.offsetLeft-8):0;}
+  function offsetFor(id){const item=all('#timeline>li').find(n=>n.dataset.event===id);return item?.offsetLeft || 0;}
   function snapshot(){return D.readingState({filters:state.applied,anchor:state.anchor,open:[...state.open],view:state.view});}
   function writeLocation(){
     if(restoring)return;
@@ -700,7 +861,7 @@ const ReaderData = (() => {
     if(expand){detail.open=true;state.open.add(id);}
     const behavior='instant';
     if(state.view==='list'){item.scrollIntoView({block:'start',behavior});}
-    else {state.scroll=offsetFor(id);el('timelineViewport').scrollTo({left:state.scroll,behavior});}
+    else {state.scroll=offsetFor(id);el('timelineViewport').scrollTo({left:state.scroll,top:0,behavior});}
     if(focus)detail.querySelector('summary').focus({preventScroll:true});syncPosition({forceFollow:true});queueSave();
   }
   function setView(view){

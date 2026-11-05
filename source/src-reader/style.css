@@ -105,3 +105,134 @@ main { padding: 0 0 3rem; }
   .site-header nav, .reader-actions { display: none; }
   .site-header, main { width: 100%; }
 }
+
+/* Size the track to the reading pane, including at large text sizes. */
+@media screen {
+  body:not(.list-view) .timeline-viewport {
+    container-type: inline-size;
+    padding: 6px 0 12px;
+    scroll-padding-inline: 0;
+    scroll-snap-type: x mandatory;
+  }
+  body:not(.list-view) .timeline {
+    --cards: 1;
+    --card-gap: 1rem;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - (var(--cards) - 1) * var(--card-gap)) / var(--cards));
+    width: 100%;
+    min-height: 0;
+    gap: var(--card-gap);
+    padding: 0;
+  }
+  @container (min-width: 39em) { body:not(.list-view) .timeline { --cards: 2; } }
+  @container (min-width: 60em) { body:not(.list-view) .timeline { --cards: 3; } }
+  @container (min-width: 80em) { body:not(.list-view) .timeline { --cards: 4; } }
+  body:not(.list-view) .timeline > li {
+    width: auto;
+    min-width: 0;
+    padding-inline: 8px;
+    scroll-margin: 0;
+    scroll-snap-align: start;
+  }
+  body:not(.list-view) .timeline::before { display: none; }
+  body:not(.list-view) .timeline > li::before {
+    content: "";
+    position: absolute;
+    inset: 46px calc(-1 * var(--card-gap)) auto 8px;
+    border-top: 1px solid var(--line);
+  }
+  body:not(.list-view) .timeline > li:last-child::before { right: 8px; }
+}
+@media screen and (min-width: 56em) {
+  .site-header { padding-block: .45rem; }
+  .site-footer { padding-block: .45rem; gap: 1rem; }
+  main { padding-bottom: 1rem; }
+  .masthead h1, body[data-mode=read] .masthead h1 { font-size: 1.6rem; }
+  .reader-heading { padding: .75rem 0; }
+  .reader-heading h2, .selection-intro h2 { font-size: 1.45rem; }
+  .decade-nav button { min-width: 6rem; padding: .35rem .75rem; }
+  .reading-position { margin-top: .45rem; }
+  .reading-hint { margin: 0 0 .5rem; }
+  .event-meta { margin-bottom: .45rem; }
+  .event-meta > span:first-child { font-size: 1.4rem; }
+  .event-title { font-size: 1.15rem; }
+  #selection { grid-template-columns: minmax(12rem, 1fr) minmax(0, 2.8fr); }
+  .selection-intro, .selection-form { padding-block: 1rem; min-width: 0; }
+  .selection-form { padding-left: clamp(1.25rem, 3vw, 2.5rem); }
+  #filterForm fieldset { min-width: 0; margin: .7rem 0; }
+  #filterForm legend { margin-bottom: .35rem; }
+  .choices { gap: .4rem; }
+  .choices label { min-height: 44px; padding: .3rem .65rem; gap: .4rem; }
+  .types { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .choice-actions { margin-top: 0; }
+  .filter-result {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .5rem 1rem;
+    padding-top: .65rem;
+    border-top: 1px solid var(--line);
+  }
+  .filter-preview { padding: 0; border: 0; }
+  .filter-preview .help { margin: 0; }
+  .filter-result .form-actions { margin: 0; }
+  .filter-result .primary { min-width: 7rem; padding-block: .4rem; }
+}
+/* Keep navigation on screen. A long open event scrolls inside the reader.
+   Short windows, zoomed layouts and the vertical list use normal page flow. */
+@media screen and (min-width: 56em) and (min-height: 36em) {
+  html:not(.large-text) body:is([data-mode=select], [data-mode=read]:not(.list-view)) {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+  }
+  html:not(.large-text) body:is([data-mode=select], [data-mode=read]:not(.list-view)) main {
+    flex: 1;
+    min-height: 0;
+    margin-block: 0;
+    padding-block: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  body[data-mode=select] #selection { overflow-y: auto; }
+  body[data-mode=read]:not(.list-view) #reader {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+  }
+  #reader > :not(.timeline-viewport) { flex: none; }
+  body[data-mode=read]:not(.list-view) .timeline-viewport {
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    min-height: 0;
+  }
+  body[data-mode=read] .related-reading { margin: .5rem 0; padding-top: .5rem; }
+}
+
+/* Use the space above the cards for navigation, leaving room for the text below. */
+.reading-position .reading-hint { margin: 0; font-size: .875rem; font-weight: 400; }
+@media screen and (min-width: 56em) {
+  .reader-heading > div:first-child { display: flex; align-items: baseline; flex-wrap: wrap; gap: .3rem 1rem; }
+  .reading-position { margin-block: .4rem; }
+  .reading-position .move-controls { margin-left: auto; }
+  body:not(.list-view) .decade-label { display: none; }
+  body:not(.list-view) .timeline > li::before { top: 14px; }
+  body:not(.list-view) .event-body { margin-top: .6rem; padding-top: .6rem; }
+  body:not(.list-view) .event-body :is(.event-date, .draft-label, .easy-text p) { margin-bottom: .4rem; }
+  body:not(.list-view) .event-body .more { margin-top: .4rem; }
+  body:not(.list-view) .event-actions { margin-top: .45rem; padding-top: .25rem; }
+}
+@media screen and (max-width: 55.999em) {
+  .reading-position { flex-wrap: wrap; }
+  .reading-position .reading-hint { order: 1; flex-basis: 100%; margin: 0 0 .65rem; }
+}
+@media screen and (min-width: 56em) and (max-height: 44em) {
+  .site-header, .site-footer { padding-block: .15rem; }
+  .reader-heading { padding-block: .3rem; }
+  .decade-nav button { text-align: center; padding-inline: .35rem; }
+  .decade-nav button span { display: inline; margin-left: .5em; }
+  #filterForm fieldset { margin-block: .5rem; }
+}
