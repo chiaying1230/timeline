@@ -32,7 +32,8 @@ const ReaderData = (() => {
   }
   function date(e) {if(e.precision==='decade')return '約 '+(e.when||e.y+' 年代');if(e.precision==='year')return e.y+' 年（月日未詳）';if(e.precision==='month')return e.y+' 年 '+e.mo+' 月（日未詳）';return `${e.y} 年 ${e.mo} 月 ${e.dd} 日`;}
   function summary(f) {
-    const d=f.decades.length?f.decades.map(d=>d+' 年代').join('、'):'全部年代';
+    const allDecades = !f.decades.length || decades.every(decade => f.decades.includes(decade));
+    const d = allDecades ? '全部年代' : f.decades.join('、') + ' 年代';
     const t=f.types.length===types.length?'全部類型':f.types.map(t=>TRACKS[t].name).join('、');
     return [d,t,f.terms.length?f.terms.join('、'):''].filter(Boolean).join('｜');
   }

@@ -20,7 +20,7 @@
     if(history){const hash=next==='read'?'#read':next==='news'?'#clippings':'#filters';if(location.hash.split('?')[0]!==hash)window.history.pushState({reader:true},'',hash);writeLocation();}
     if(next==='read'){
       requestAnimationFrame(()=>{el('timelineViewport').scrollLeft=state.scroll;window.scrollTo(0,state.pageScroll);syncNav();});
-      if(focus)el('editFilters').focus({preventScroll:true});queueSave();
+      if(focus)el('readerTitle').focus({preventScroll:true});queueSave();
     } else if(next==='select'){syncPicker();window.scrollTo(0,0);if(focus)el('selectionTitle').focus({preventScroll:true});}
     else {window.scrollTo(0,0);if(focus)el('newsTitle').focus({preventScroll:true});}
   }
@@ -36,7 +36,7 @@
     el('filterCount').textContent=!f.types.length?'請至少選取一種事件類型。':`符合 ${n} 件精選事件，共 ${EV.length} 件。`;
     el('applyButton').disabled=!f.types.length;
     el('applyButton').textContent=state.hasRead?'套用並繼續閱讀':'開始閱讀';
-    el('cancelFilters').hidden=!state.hasRead;el('readAll').textContent=state.hasRead?'改看全部':'直接看全部';
+    el('cancelFilters').hidden=!state.hasRead;
     el('selectionTitle').textContent=state.hasRead?'調整閱讀範圍':'選擇閱讀範圍';
   }
   function edit(){capturePosition();state.draft=D.clone(state.applied);mode('select');}
@@ -76,7 +76,9 @@
     el('timeline').innerHTML=list.map(e=>{const name=decade!==e.dec?e.dec+' 年代':'';decade=e.dec;return `<li data-event="${esc(e.id)}" style="--category:var(--${e.track})"><div class="decade-label">${name}</div>${eventHtml(e)}</li>`;}).join('');
     el('timelineViewport').hidden=!list.length;el('readerEmpty').hidden=!!list.length;
     const label=D.summary(state.applied);el('appliedSummary').textContent=label;
-    el('readingCount').textContent=`顯示 ${list.length} / ${EV.length} 件精選事件`;
+    el('readingHint').hidden=!list.length;
+    el('positionLabel').parentElement.hidden=!list.length;
+    el('decadeNav').hidden=!list.length;
     const only=D.onlyNews(state.applied);el('allNewsLink').hidden=!only;
     if(only)el('relatedNewsCount').textContent=`完整剪報資料中有 ${D.filterNews(state.applied).length} 篇符合目前的年代與用語條件。`;
     renderDecades();bindAudio();applyPrefs();syncNav();
@@ -94,8 +96,32 @@
   el('timelineViewport').addEventListener('keydown',e=>{if(e.target!==el('timelineViewport'))return;if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();move(e.key==='ArrowRight'?1:-1);}});
   new ResizeObserver(syncNav).observe(el('timelineViewport'));
   new ResizeObserver(()=>syncPosition({forceFollow:true})).observe(el('decadeNav'));
-  el('easyToggle').addEventListener('change',e=>{state.easy=e.target.checked;applyPrefs();savePrefs();});
-  el('largeToggle').addEventListener('change',e=>{capturePosition();state.large=e.target.checked;applyPrefs();savePrefs();const target=all('#timeline>li').find(n=>n.dataset.event===state.anchor);if(target)el('timelineViewport').scrollLeft=offsetFor(state.anchor);syncNav();});
+  const preferences = el('preferencesDialog');
+  el('openPreferences').addEventListener('click', () => {
+    el('easyToggle').checked = state.easy;
+    el('largeToggle').checked = state.large;
+    preferences.querySelector(`input[value="${state.view}"]`).checked = true;
+    preferences.returnValue = '';
+    preferences.showModal();
+  });
+  preferences.addEventListener('close', () => {
+    if (preferences.returnValue !== 'apply') return;
+    capturePosition();
+    const view = preferences.querySelector('input[name="layout"]:checked').value;
+    const layoutChanged = view !== state.view;
+    const reposition = layoutChanged || state.large !== el('largeToggle').checked;
+    const anchor = state.anchor;
+    state.easy = el('easyToggle').checked;
+    state.large = el('largeToggle').checked;
+    setView(view);
+    applyPrefs();
+    savePrefs();
+    if (layoutChanged && view === 'timeline') el('reader').scrollIntoView({block:'start'});
+    if (reposition && anchor) jump(anchor, {focus:true});
+    syncNav();
+    queueSave();
+    say('已套用閱讀設定。');
+  });
   function library({reset=true}={}){if(reset){state.query='';state.limit=40;state.newsAll=false;el('newsQuery').value='';}renderNews();mode('news');}
   function renderNews(){
     const f=state.newsAll?D.defaults():state.applied,A=D.filterNews(f,state.query),scope={...D.clone(f),types:['news']};
@@ -164,8 +190,6 @@
   }
   function setView(view){
     state.view=view;document.body.classList.toggle('list-view',view==='list');
-    el('viewToggle').setAttribute('aria-pressed',String(view==='list'));
-    el('viewToggle').textContent=view==='list'?'改用橫向年表':'改用直式清單';
     el('timelineViewport').setAttribute('aria-label',view==='list'?'依時間排列的事件清單':'可左右捲動的精選年表');
     el('readingHint').textContent=view==='list'?'由上往下閱讀，點年份或標題展開介紹。可以同時打開多件事件。':'向右閱讀，點年份或標題展開介紹。等距排列，間距不代表經過的年數。';
   }
@@ -199,7 +223,6 @@
   el('decadeNav').addEventListener('click',e=>{const b=e.target.closest('[data-decade]');if(!b||b.disabled)return;const event=lastList.find(ev=>ev.dec===Number(b.dataset.decade));if(event){jump(event.id,{focus:true});say(`已移到 ${event.dec} 年代。`);}});
   el('resetFilters').addEventListener('click',()=>{state.draft=D.defaults();syncPicker();});
   el('emptyReset').addEventListener('click',()=>commit(D.defaults()));
-  el('viewToggle').addEventListener('click',()=>{capturePosition();const anchor=state.anchor;setView(state.view==='list'?'timeline':'list');requestAnimationFrame(()=>{if(state.view==='timeline')el('reader').scrollIntoView({block:'start'});jump(anchor,{smooth:false});syncNav();});});
   el('openDirectory').addEventListener('click',()=>{el('eventQuery').value='';renderDirectory();el('directoryDialog').showModal();el('eventQuery').focus();});
   el('eventQuery').addEventListener('input',renderDirectory);
   el('directoryResults').addEventListener('click',e=>{const b=e.target.closest('[data-jump-event]');if(!b)return;el('directoryDialog').close();jump(b.dataset.jumpEvent,{expand:true,focus:true});say('已移到並展開該事件。');});

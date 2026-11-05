@@ -1,22 +1,58 @@
 <a class="skip" href="#content">跳到主要內容</a>
-<header class="site-header"><a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">年</span>智能障礙歷史年表</a><nav aria-label="網站"><a href="#clippings" id="navNews">查閱剪報</a><button type="button" class="text-button" id="aboutButton">關於資料</button></nav></header>
-<main id="content">
-<header class="page-heading"><p class="eyebrow">臺灣 · 1962–2024</p><h1>智能障礙歷史年表</h1><p>從測驗與法規，到新聞與研究，按時間閱讀 50 件精選事件。</p></header>
+<header class="site-header">
+  <div class="masthead">
+    <h1><a class="brand" href="index.html">智能障礙歷史年表</a></h1>
+    <p>臺灣 · 1962–2024</p>
+  </div>
+  <nav aria-label="網站"><a href="#clippings" id="navNews">查閱剪報</a><button type="button" class="text-button" id="aboutButton">關於資料</button></nav>
+</header>
+<main id="content" tabindex="-1">
 <section id="selection" aria-labelledby="selectionTitle">
-<aside class="selection-intro"><p class="section-index">開始之前</p><h2>你想從哪裡<br>開始讀？</h2><p>可以直接看全部事件，<br>也可以先選一段年代或一種類型。</p><button type="button" class="primary" id="readAll">直接看全部 →</button><button type="button" id="resumeReading" hidden>繼續上次閱讀</button><p id="resumeLabel" class="help" hidden></p><div class="reading-guide"><h3>這份年表怎麼讀</h3><ol><li>從左往右，沿年份閱讀。</li><li>點開標題，介紹就在下方。</li><li>可以同時打開幾件，慢慢對照。</li></ol><p>每件事的間距相同，不代表相隔的年數。</p></div></aside>
-<div class="selection-form"><div class="section-title"><span class="section-index">閱讀範圍</span><button type="button" class="text-button" id="resetFilters">重設條件</button></div><h2 id="selectionTitle" tabindex="-1">選擇閱讀範圍</h2><p class="section-lead">選好後，篩選會收起，讓你專心看年表。</p>
+<div class="selection-intro">
+  <h2>從 1962 年讀起</h2>
+  <p>沿著 50 件事件，閱讀臺灣智能障礙相關的新聞、研究與法規。</p>
+  <button type="button" class="primary" id="readAll">閱讀全部事件</button>
+  <button type="button" id="resumeReading" hidden>繼續上次閱讀</button>
+  <p id="resumeLabel" class="help" hidden></p>
+</div>
+<div class="selection-form"><div class="section-title"><h2 id="selectionTitle" tabindex="-1">選擇閱讀範圍</h2><button type="button" class="text-button" id="resetFilters">重設條件</button></div>
 <form id="filterForm"><fieldset><legend><span class="step">01</span>年代 <small>可複選；不選就是全部年代</small></legend><div id="decadeOptions" class="choices decades"></div></fieldset>
 <fieldset><legend><span class="step">02</span>事件類型 <small>可複選</small></legend><div id="typeOptions" class="choices types"></div><div class="choice-actions"><button type="button" class="text-button" id="selectAllTypes">選取全部類型</button><button type="button" class="text-button" id="onlyNews">只看剪報</button></div></fieldset>
 <fieldset id="wordField" hidden><legend><span class="step">03</span>新聞用語 <small>符合任一所選用語即可</small></legend><p class="help">這些是報紙當年的用詞，可能帶有歧視。保留原詞，方便查找歷史資料。</p><div id="wordOptions" class="choices words"></div></fieldset>
 <div class="filter-preview"><p id="filterCount" role="status" aria-live="polite"></p><p id="filterPreview" class="help"></p></div><div class="form-actions"><button class="primary" type="submit" id="applyButton">開始閱讀 →</button><button type="button" id="cancelFilters" hidden>取消調整</button></div></form></div></section>
 <section id="reader" hidden aria-label="精選年表">
-<div class="reader-controls"><div class="reading-bar"><div><span class="section-index">正在閱讀</span><p id="appliedSummary"></p></div><button type="button" id="editFilters">調整範圍</button></div><div class="reading-tools"><p id="readingCount"></p><div class="reading-preferences"><label><input type="checkbox" id="easyToggle" checked>易讀介紹</label><label><input type="checkbox" id="largeToggle">大字</label></div><button type="button" id="openDirectory">找事件</button><button type="button" id="viewToggle" aria-pressed="false">改用直式清單</button><button type="button" id="shareReading">分享</button></div><nav id="decadeNav" class="decade-nav" aria-label="跳到年代"></nav></div>
+<div class="reader-controls">
+  <div class="reader-heading">
+    <div><h2 id="readerTitle" tabindex="-1">精選事件</h2><p id="appliedSummary"></p></div>
+    <div class="reader-actions">
+      <button type="button" id="editFilters">調整範圍</button>
+      <button type="button" id="openDirectory">找事件</button>
+      <button type="button" id="openPreferences" aria-haspopup="dialog">閱讀設定</button>
+      <button type="button" id="shareReading">分享</button>
+    </div>
+  </div>
+  <nav id="decadeNav" class="decade-nav" aria-label="跳到年代"></nav>
+</div>
 <div class="reading-position"><p id="positionLabel" aria-live="off"></p><div class="move-controls"><button type="button" id="earlier" aria-label="移到較早的事件">← 較早</button><button type="button" id="later" aria-label="移到較晚的事件">較晚 →</button></div></div><p class="help reading-hint" id="readingHint">向右閱讀，點年份或標題展開介紹。等距排列，間距不代表經過的年數。</p>
 <div id="timelineViewport" class="timeline-viewport" role="region" aria-label="可左右捲動的精選年表" tabindex="0"><ol id="timeline" class="timeline"></ol></div>
 <div id="readerEmpty" class="empty" hidden><p class="section-index">沒有符合的事件</p><h2>換個範圍，繼續找。</h2><p>可以減少年代或用語限制。完整剪報中仍可能有符合的資料。</p><button type="button" data-action="edit">調整篩選</button><button type="button" id="emptyReset">看全部 50 件</button></div>
 <div id="allNewsLink" class="related-reading" hidden><div><h2>繼續查閱完整剪報</h2><p id="relatedNewsCount"></p></div><button type="button" id="openFilteredNews">查看所有符合的剪報 →</button></div></section>
 <section id="newsLibrary" hidden aria-labelledby="newsTitle"><button type="button" id="backToTimeline">← 返回精選年表</button><header class="library-heading"><p class="section-index">資料查閱</p><h2 id="newsTitle" tabindex="-1">剪報資料庫</h2><p>738 篇剪報的日期、報別、整理標題與編碼。尚未提供原件全文。</p></header><div class="archive-controls"><div><p id="newsConditions" class="help"></p><button type="button" class="text-button" id="clearNewsScope">查閱全部年代與用語</button></div><label class="search-field">搜尋剪報<input type="search" id="newsQuery" placeholder="例如：家長陳情、報別或歷史用語" autocomplete="off"></label></div><p id="newsCount" role="status" aria-live="polite"></p><ol id="newsRows" class="news-rows"></ol><div id="newsEmpty" class="empty" hidden>沒有符合的剪報。請更換搜尋字詞，或調整年代與用語。</div><button type="button" id="moreNews">再看 40 篇</button></section>
 <p class="sr-only" id="readerStatus" role="status" aria-live="polite"></p></main>
+<dialog id="preferencesDialog" aria-labelledby="preferencesTitle">
+  <h2 id="preferencesTitle">閱讀設定</h2>
+  <form method="dialog" class="preferences-form">
+    <fieldset><legend>文字</legend>
+      <label><input type="checkbox" id="easyToggle">顯示易讀介紹</label>
+      <label><input type="checkbox" id="largeToggle">使用大字</label>
+    </fieldset>
+    <fieldset><legend>閱讀方向</legend>
+      <label><input type="radio" name="layout" value="timeline">橫向年表（往右讀）</label>
+      <label><input type="radio" name="layout" value="list">直式清單（往下讀）</label>
+    </fieldset>
+    <div class="form-actions"><button type="submit" class="primary" value="apply">套用設定</button><button type="submit" value="cancel">取消</button></div>
+  </form>
+</dialog>
 <footer class="site-footer"><div><strong>智能障礙歷史年表</strong><p>50 件精選事件 · 738 篇剪報資料</p></div><p>易讀介紹仍待審閱。<br>照片、剪報圖與錄音示例皆非歷史原件。</p><button class="text-button" type="button" data-action="about">資料來源與使用說明 ↗</button></footer>
 <dialog id="directoryDialog" class="directory-dialog" aria-labelledby="directoryTitle"><form method="dialog"><button aria-label="關閉事件目錄">關閉 ×</button></form><p class="section-index">在目前範圍中查找</p><h2 id="directoryTitle">找一件事</h2><label class="search-field">年份、事件名稱或內文<input type="search" id="eventQuery" placeholder="例如：1990、家長、測驗" autocomplete="off"></label><p id="directoryCount" class="help" role="status"></p><ol id="directoryResults" class="directory-results"></ol><p id="directoryEmpty" hidden>目前範圍沒有符合的事件。可以換個字詞，或關閉目錄後調整範圍。</p></dialog>
 <dialog id="shareDialog" class="share-dialog" aria-labelledby="shareTitle"><form method="dialog"><button>關閉 ×</button></form><h2 id="shareTitle">保留這段閱讀位置</h2><p>連結會保留篩選條件、閱讀位置與已展開事件。</p><label class="search-field">閱讀連結<input type="url" id="shareUrl" readonly></label><button type="button" class="primary" id="copyShare">複製連結</button><p id="shareFeedback" role="status" class="help"></p><p id="localLinkNotice" class="help" hidden>目前是本機預覽網址，只能在這台電腦使用。網站發布後，才可把公開網址分享給別人。</p></dialog>

@@ -9,10 +9,8 @@ const vw = () => document.documentElement.clientWidth;
 const f1 = v => v.toFixed(1);
 // 粗估一段文字畫出來有多寬：中文字算一個字寬，英數字大約半個多一點
 const textW = (s,fs) => [...String(s)].reduce((a,ch)=>a+(ch.charCodeAt(0)<256 ? (ch===' '?.3:.58) : 1)*fs, 0);
-// 減少動態：作業系統的設定，或頁面上的開關
-let calmPick = null;
-try{ const v = localStorage.getItem('idtree.tl.calm'); if(v==='1'||v==='0') calmPick = v==='1'; }catch(e){}
-const calm = () => calmPick!=null ? calmPick : window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Read the current system preference on each navigation, just as the CSS does.
+const calm = () => !window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
 
 /* ---------- 軌道：除了顏色，每一條的記號形狀也不同 ---------- */
 const TRACKS = {

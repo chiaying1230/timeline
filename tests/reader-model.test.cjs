@@ -11,6 +11,11 @@ const source=read('data.js').replace('/*__DATA__*/',read('data.json'))+
   read('easy.js')+read('src-reader/05-model.js')+'\nglobalThis.data=ReaderData;globalThis.events=EV;globalThis.news=NEWS;';
 vm.runInContext(source,context);
 const D=context.data;
+test('all seven selected decades have the same short label as the default range', () => {
+  const filters = D.defaults();
+  assert.equal(D.summary({...filters, decades:[...D.decades]}), D.summary(filters));
+  assert.match(D.summary({...filters, decades:[1970, 1990]}), /1970、1990 年代/);
+});
 test('retains the exact 50 events and 738 clippings',()=>{assert.equal(context.events.length,50);assert.equal(context.news.length,738);assert.equal(D.filterEvents(D.defaults()).length,50);assert.equal(new Set(context.events.map(e=>e.id)).size,50);});
 test('type choices OR together, decade and terms AND across groups',()=>{
  const f=D.normalize({decades:[1980],types:['news','lit']});
