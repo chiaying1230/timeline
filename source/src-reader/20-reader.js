@@ -69,7 +69,7 @@
     state.applied=D.clone(f);state.hasRead=true;
     if(first||changed){pauseAudio();lastList=D.filterEvents(state.applied);renderTimeline(lastList);const target=first?lastList[0]:D.nearest(lastList,oldAnchor);state.anchor=target?.id||null;state.scroll=target?offsetFor(target.id):0;state.pageScroll=0;}
     const targetId=state.anchor;
-    mode('read');if(first||changed)requestAnimationFrame(()=>jump(targetId,{smooth:false}));say(`已套用篩選，顯示 ${lastList.length} 件精選事件。`);
+    mode('read');if(first||changed)requestAnimationFrame(()=>jump(targetId,{smooth:false}));say('');
   }
   el('filterForm').addEventListener('submit',e=>{e.preventDefault();if(state.draft.types.length)commit(state.draft);});
   el('readAll').addEventListener('click',()=>commit(D.defaults()));el('cancelFilters').addEventListener('click',()=>{state.draft=D.clone(state.applied);mode('read');});
@@ -94,11 +94,8 @@
     el('timeline').innerHTML=list.map(e=>{const name=decade!==e.dec?e.dec+' 年代':'';decade=e.dec;return `<li data-event="${esc(e.id)}" style="--category:var(--${e.track})"><div class="decade-label">${name}</div>${eventHtml(e)}</li>`;}).join('');
     el('timelineViewport').hidden=!list.length;el('readerEmpty').hidden=!!list.length;
     const label=D.summary(state.applied);el('appliedSummary').textContent=label;
-    el('readingHint').hidden=!list.length;
     el('positionLabel').parentElement.hidden=!list.length;
     el('decadeNav').hidden=!list.length;
-    const only=D.onlyNews(state.applied);el('allNewsLink').hidden=!only;
-    if(only)el('relatedNewsCount').textContent=`完整剪報資料中有 ${D.filterNews(state.applied).length} 篇符合目前的年代與用語條件。`;
     renderDecades();bindAudio();applyPrefs();syncNav();
   }
   function bindAudio(){all('audio',el('timeline')).forEach(audio=>{
@@ -157,7 +154,7 @@
     el('newsRows').innerHTML=A.slice(0,state.limit).map(n=>`<li><details><summary><span class="clip-meta">${esc(n.d)}　${esc(n.o)}</span><h3 class="clip-title">${esc(n.t)}</h3></summary><p class="clip-codes">用詞：${esc(n.w.join('、')||'未編')}<br>觀點：${esc(n.v||'未編')}${n.v2&&n.v2!=='無'?'；次要：'+esc(n.v2):''}<br>主題：${esc(n.p.join('、')||'未編')}${n.x?'<br>原資料標記：主體非智能障礙者':''}</p><figure class="clip-preview"><button type="button" class="image-button" data-image="sample-clip" aria-label="放大剪報版面示意"><img src="assets/sample-newspaper.png" alt="剪報版面示意，非這篇新聞的原件" width="640" height="480" loading="lazy"></button><figcaption class="media-caption">示意，非本篇原件。尚未提供掃描圖與內文，以上僅為實際編碼資料。</figcaption></figure></details></li>`).join('');
     el('newsEmpty').hidden=!!A.length;el('moreNews').hidden=state.limit>=A.length;el('moreNews').textContent=`再看 ${Math.min(40,Math.max(0,A.length-state.limit))} 篇`;
   }
-  el('navNews').addEventListener('click',e=>{e.preventDefault();library();});el('openFilteredNews').addEventListener('click',()=>library());
+  el('navNews').addEventListener('click',e=>{e.preventDefault();library();});
   el('backToTimeline').addEventListener('click',()=>mode(state.hasRead?'read':'select'));
   el('newsQuery').addEventListener('input',e=>{state.query=e.target.value;state.limit=40;renderNews();});el('moreNews').addEventListener('click',()=>{state.limit+=40;renderNews();});
   document.addEventListener('click',e=>{
@@ -218,7 +215,6 @@
   function setView(view){
     state.view=view;document.body.classList.toggle('list-view',view==='list');
     el('timelineViewport').setAttribute('aria-label',view==='list'?'依時間排列的事件清單':'可左右捲動的精選年表');
-    el('readingHint').textContent=view==='list'?'由上往下閱讀，點年份或標題展開介紹。可以同時打開多件事件。':'向右閱讀，點年份或標題展開介紹。等距排列，間距不代表經過的年數。';
   }
   function restore(saved,route='read'){
     restoring=true;clearTimeout(saveTimer);pauseAudio();const clean=D.readingState(saved);
