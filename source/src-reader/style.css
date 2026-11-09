@@ -218,3 +218,101 @@ main { padding: 0 0 3rem; }
   .decade-nav button span { display: inline; margin-left: .5em; }
   #filterForm fieldset { margin-block: .5rem; }
 }
+
+/* Archival index: type, rules and restrained emphasis. */
+:root {
+  --paper: #faf9f6;
+  --ink: #282725;
+  --muted: #625e58;
+  --line: #d2cec6;
+  --subtle: #eeebe5;
+  --active: #81452e;
+  --control-edge: #91887b;
+}
+.site-header { border-bottom: 2px solid var(--ink); }
+.masthead { column-gap: 1.5rem; }
+.masthead h1 { letter-spacing: .04em; }
+.masthead p { font-size: .85rem; font-variant-numeric: tabular-nums; }
+button, .choices label, dialog, .search-field input { border-radius: 0; }
+.primary { padding-inline: 1.3rem; }
+.primary:hover { background: #61301e; border-color: #61301e; }
+.selection-intro h2, .selection-form h2, .reader-heading h2,
+.library-heading h2, dialog h2 {
+  font-family: var(--sans);
+  font-weight: 600;
+}
+.selection-intro > p { line-height: 1.9; }
+.choices label {
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  padding-inline: .35rem;
+}
+.choices label:has(input:checked) {
+  background: transparent;
+  border-color: var(--control-edge);
+}
+.choices label:hover { background: var(--subtle); }
+.types label { border-left: 0; }
+#filterForm legend { font-size: .95rem; }
+#filterForm legend small { font-size: .8rem; }
+.reader-actions { gap: .25rem 1.25rem; }
+.reader-actions button { font-size: .85rem; text-decoration-thickness: 1px; }
+.decade-nav { padding-block: 0; border-top: 0; border-bottom-color: var(--control-edge); }
+.decade-nav button {
+  padding-block: .6rem;
+  text-align: left;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-weight: 500;
+}
+.decade-nav button span { font-family: var(--sans); font-size: .75rem; font-weight: 400; }
+.decade-nav button[aria-current=true] {
+  background: transparent;
+  color: var(--active);
+  border-bottom-color: var(--active);
+  font-weight: 600;
+}
+.decade-nav button:hover { background: var(--subtle); }
+.reading-position p { color: var(--muted); font-size: .85rem; font-weight: 400; }
+.move-controls button { border: 0; padding-inline: .4rem; font-size: .9rem; }
+.move-controls { gap: 1.5rem; }
+.event-meta { gap: .45rem .75rem; }
+.event-meta > span:first-child { font-weight: 500; font-variant-numeric: lining-nums tabular-nums; }
+.category { border: 0; padding-left: 0; font-size: .8rem; color: var(--muted); }
+.event-title, .list-view .event-title {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 1.1rem;
+  line-height: 1.65;
+}
+.event-details > summary::before { width: 8px; height: 8px; top: 11px; border-color: var(--ink); }
+.event-details[open] > summary::before { background: var(--ink); }
+.event-title::after { font-size: 1rem; color: var(--ink); }
+.event-body { border-top-color: var(--line); }
+.event-date { font-variant-numeric: tabular-nums; }
+.media-indicator { font-size: .75rem; }
+.sample-badge { border-color: var(--control-edge); }
+dialog { box-shadow: 0 12px 48px #0002; }
+@media screen and (min-width: 56em) {
+  .masthead h1, body[data-mode=read] .masthead h1 { font-size: 1.45rem; }
+  .site-header { padding-block: .6rem; }
+  .reader-heading { padding-block: 1rem .75rem; }
+  .reader-heading h2, .selection-intro h2, .selection-form h2 { font-size: 1.2rem; }
+  .decade-nav button span { display: block; margin-left: 0; }
+  .event-meta > span:first-child { font-size: 1.6rem; }
+  .selection-intro { padding-right: 1.5rem; }
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #242321;
+    --ink: #f0ede7;
+    --muted: #c0b9ae;
+    --line: #58534c;
+    --subtle: #33302b;
+    --active: #e4b199;
+    --on: #242321;
+    --control-edge: #9d9387;
+  }
+  .primary:hover { background: #f1c8b4; color: var(--on); border-color: #f1c8b4; }
+}
