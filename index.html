@@ -263,7 +263,7 @@ button, .choices label, dialog, .search-field input { border-radius: 0; }
   border-color: var(--control-edge);
 }
 .choices label:hover { background: var(--subtle); }
-.types label { border-left: 0; }
+.types label { border-left: 2px solid var(--category); }
 #filterForm legend { font-size: .95rem; }
 #filterForm legend small { font-size: .8rem; }
 .reader-actions { gap: .25rem 1.25rem; }
@@ -289,15 +289,15 @@ button, .choices label, dialog, .search-field input { border-radius: 0; }
 .move-controls { gap: 1.5rem; }
 .event-meta { gap: .45rem .75rem; }
 .event-meta > span:first-child { font-weight: 500; font-variant-numeric: lining-nums tabular-nums; }
-.category { border: 0; padding-left: 0; font-size: .8rem; color: var(--muted); }
+.category { border-left: 2px solid var(--category); padding-left: .5rem; font-size: .8rem; color: var(--category); }
 .event-title, .list-view .event-title {
   font-family: var(--sans);
   font-weight: 500;
   font-size: 1.1rem;
   line-height: 1.65;
 }
-.event-details > summary::before { width: 8px; height: 8px; top: 11px; border-color: var(--ink); }
-.event-details[open] > summary::before { background: var(--ink); }
+.event-details > summary::before { width: 8px; height: 8px; top: 11px; border-color: var(--category); }
+.event-details[open] > summary::before { background: var(--category); }
 .event-title::after { font-size: 1rem; color: var(--ink); }
 .event-body { border-top-color: var(--line); }
 .event-date { font-variant-numeric: tabular-nums; }
