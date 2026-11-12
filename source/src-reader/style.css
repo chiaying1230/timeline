@@ -320,7 +320,36 @@ dialog { box-shadow: 0 12px 48px #0002; }
 :root { --active: #343a3c; }
 .primary:hover { background: #202628; border-color: #202628; }
 #quickFilters { flex: none; }
-#quickFilters > summary { min-height: 44px; padding: .45rem .25rem; cursor: pointer; font-size: .85rem; text-decoration: underline; text-underline-offset: .3em; }
+/* Native buttons and the disclosure share the same line box and hit area. */
+.reader-actions > button, #quickFilters > summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin: 0;
+  padding: .45rem .25rem;
+  border: 0;
+  font: 400 .85rem/1.6 var(--sans);
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .3em;
+}
+#quickFilters > summary { list-style: none; }
+#quickFilters > summary::-webkit-details-marker { display: none; }
+#quickFilters > summary::after {
+  content: "";
+  width: .35rem;
+  height: .35rem;
+  margin-left: .65rem;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+}
+#quickFilters[open] > summary::after { transform: translateY(1px) rotate(225deg); }
+#quickFilters > summary:hover { color: var(--active); background: var(--subtle); }
+.site-header nav a, .site-header nav button { font-size: .875rem; line-height: 1.6; }
 .reader-actions { position: relative; align-items: center; }
 .quick-filter-fields {
   position: absolute;
