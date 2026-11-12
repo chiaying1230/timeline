@@ -844,6 +844,30 @@ const ReaderData = (() => {
     viewport.scrollBy({left:direction * perPage * step, behavior:calm()?'instant':'smooth'});
   }
   el('earlier').addEventListener('click',()=>move(-1));el('later').addEventListener('click',()=>move(1));
+  let wheelDelta = 0, wheelLockedUntil = 0, wheelDirection = 0;
+  el('timelineViewport').addEventListener('wheel', event => {
+    const viewport = el('timelineViewport');
+    const nativeScroll = event.ctrlKey || event.metaKey || event.shiftKey || event.altKey ||
+      Math.abs(event.deltaX) >= Math.abs(event.deltaY);
+    // Keep document reading, media controls and browser zoom on their native paths.
+    if(state.view !== 'timeline' || nativeScroll || !event.cancelable ||
+      event.target.closest('.event-body')) return;
+    const direction = Math.sign(event.deltaY);
+    const atEdge = direction < 0 ? viewport.scrollLeft <= 2 :
+      viewport.scrollLeft >= viewport.scrollWidth - viewport.clientWidth - 2;
+    if(atEdge) return;
+    event.preventDefault();
+    const now = performance.now();
+    if(now < wheelLockedUntil && wheelDirection === direction) return;
+    if(Math.sign(wheelDelta) !== direction) wheelDelta = 0;
+    const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? viewport.clientHeight : 1;
+    wheelDelta += event.deltaY * unit;
+    if(Math.abs(wheelDelta) < 24) return;
+    wheelLockedUntil = now + 280;
+    wheelDirection = direction;
+    wheelDelta = 0;
+    move(direction);
+  }, {passive:false});
   el('timelineViewport').addEventListener('scroll',()=>{cancelAnimationFrame(scrollFrame);scrollFrame=requestAnimationFrame(()=>{capturePosition();syncNav();queueSave();});},{passive:true});
   el('timelineViewport').addEventListener('keydown',e=>{if(e.target!==el('timelineViewport'))return;if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();move(e.key==='ArrowRight'?1:-1);}});
   new ResizeObserver(syncNav).observe(el('timelineViewport'));
