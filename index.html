@@ -934,8 +934,24 @@ const ReaderData = (() => {
   }
   el('earlier').addEventListener('click',()=>move(-1));el('later').addEventListener('click',()=>move(1));
   let wheelDelta = 0, wheelLockedUntil = 0, wheelDirection = 0;
+  function visibleEventIsOpen(){
+    const viewport = el('timelineViewport');
+    const left = viewport.getBoundingClientRect().left + viewport.clientLeft;
+    const right = left + viewport.clientWidth;
+    return all('.event-details[open]',viewport).some(detail=>{
+      const bounds = detail.getBoundingClientRect();
+      return bounds.left < right - 1 && bounds.right > left + 1;
+    });
+  }
   el('timelineViewport').addEventListener('wheel', event => {
     const viewport = el('timelineViewport');
+    // Opening any visible event expresses reading intent across the entire row.
+    if(visibleEventIsOpen()){
+      wheelDelta = 0;
+      wheelLockedUntil = 0;
+      wheelDirection = 0;
+      return;
+    }
     const nativeScroll = event.ctrlKey || event.metaKey || event.shiftKey || event.altKey ||
       Math.abs(event.deltaX) >= Math.abs(event.deltaY);
     // Keep document reading, media controls and browser zoom on their native paths.
@@ -947,12 +963,15 @@ const ReaderData = (() => {
     if(atEdge) return;
     event.preventDefault();
     const now = performance.now();
-    if(now < wheelLockedUntil && wheelDirection === direction) return;
+    if(now < wheelLockedUntil && wheelDirection === direction){
+      wheelLockedUntil = now + 240;
+      return;
+    }
     if(Math.sign(wheelDelta) !== direction) wheelDelta = 0;
     const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? viewport.clientHeight : 1;
     wheelDelta += event.deltaY * unit;
     if(Math.abs(wheelDelta) < 24) return;
-    wheelLockedUntil = now + 280;
+    wheelLockedUntil = now + 240;
     wheelDirection = direction;
     wheelDelta = 0;
     move(direction);
