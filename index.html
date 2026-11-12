@@ -329,30 +329,22 @@ dialog { box-shadow: 0 12px 48px #0002; }
 /* Collection search and an in-place index use the same typographic hierarchy. */
 :root { --active: #343a3c; }
 .primary:hover { background: #202628; border-color: #202628; }
-.reader-find {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: .75rem 2rem;
-  padding: .35rem 0 .85rem;
-}
-#readerSearchForm { flex: 0 1 30rem; min-width: 0; }
-#readerSearchForm > label { display: block; font-size: .85rem; margin-bottom: .3rem; }
-.search-line { display: flex; gap: .5rem; }
-.search-line input {
-  width: 100%;
-  min-width: 0;
-  min-height: 44px;
-  padding: .5rem .65rem;
+#quickFilters { flex: none; }
+#quickFilters > summary { min-height: 44px; padding: .45rem .25rem; cursor: pointer; font-size: .85rem; text-decoration: underline; text-underline-offset: .3em; }
+.reader-actions { position: relative; align-items: center; }
+.quick-filter-fields {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 5;
+  width: min(40rem, calc(100vw - 2 * var(--gutter)));
+  max-height: 65dvh;
+  overflow: auto;
+  padding: 1rem 1.25rem;
   border: 1px solid var(--control-edge);
   background: var(--paper);
-  font: inherit;
-  font-size: 1rem;
+  box-shadow: 0 8px 24px #0002;
 }
-.search-line button { flex: none; font-size: .85rem; }
-#quickFilters { flex: 1 1 16rem; padding-top: 1.7rem; }
-#quickFilters > summary { min-height: 44px; padding-block: .5rem; cursor: pointer; font-size: .9rem; }
-.quick-filter-fields { padding: .5rem 0 1rem; }
 .quick-filter-fields fieldset { margin: .6rem 0; }
 .quick-filter-fields legend { font-size: .9rem; margin-bottom: .4rem; }
 .quick-filter-fields .types { grid-template-columns: repeat(2,minmax(0,1fr)); }
@@ -367,8 +359,6 @@ dialog { box-shadow: 0 12px 48px #0002; }
   text-underline-offset: .3em;
 }
 .active-filters button span { margin-left: .35rem; }
-.reader-search-panel { border-block: 1px solid var(--line); padding: 1rem 0; margin-bottom: 1rem; }
-#readerSearchCount { font-size: .9rem; margin-bottom: .5rem; }
 .directory-results > .directory-group { border: 0; }
 .directory-group h3 {
   display: flex;
@@ -383,21 +373,13 @@ dialog { box-shadow: 0 12px 48px #0002; }
 .directory-results .directory-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem; }
 .directory-results .category { display: inline; color: var(--category); }
 .directory-results strong { display: block; }
-.reader-search-panel .directory-group ol { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 1.75rem; }
-@media(max-width:700px) {
-  .reader-find { display: block; padding-bottom: .5rem; }
-  #quickFilters { padding-top: .25rem; }
-  .reader-search-panel .directory-group ol { display: block; }
-}
 @media(prefers-color-scheme:dark) {
   :root { --active: #d8d9d6; }
   .primary:hover { background: #f0f0ec; border-color: #f0f0ec; }
 }
-@media print { .reader-find, .active-filters, .reader-search-panel { display: none; } }
+@media print { .active-filters { display: none; } }
 
 .site-header nav { flex-wrap: wrap; gap: .35rem 1.25rem; }
-#audioDemoDialog { width: min(40rem, 94vw); }
-#audioDemoDialog > p { margin-bottom: 1rem; }
 #tourDialog {
   position: fixed;
   inset: 0;
@@ -437,7 +419,7 @@ dialog { box-shadow: 0 12px 48px #0002; }
 #tourCount { margin: 0 0 .5rem; }
 #tourText { font-size: .95rem; line-height: 1.85; }
 .tour-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
-@media print { #startTour, #openAudioDemo { display: none; } }
+@media print { #startTour { display: none; } }
 </style></head><body>
 <noscript><p>請開啟 JavaScript 以使用篩選與年表。原始資料與整理方式也可在本網站的 README 閱讀。</p></noscript>
 <a class="skip" href="#content">跳到主要內容</a>
@@ -446,7 +428,7 @@ dialog { box-shadow: 0 12px 48px #0002; }
     <h1><a class="brand" href="index.html">智能障礙歷史年表</a></h1>
     <p>臺灣 · 1962–2024</p>
   </div>
-  <nav aria-label="網站"><button type="button" class="text-button" id="startTour">使用說明</button><button type="button" class="text-button" id="openAudioDemo">試聽錄音</button><a href="#clippings" id="navNews">查閱剪報</a><button type="button" class="text-button" id="aboutButton">關於資料</button></nav>
+  <nav aria-label="網站"><button type="button" class="text-button" id="startTour">使用說明</button><a href="#clippings" id="navNews">查閱剪報</a><button type="button" class="text-button" id="aboutButton">關於資料</button></nav>
 </header>
 <main id="content" tabindex="-1">
 <section id="selection" aria-labelledby="selectionTitle">
@@ -471,15 +453,6 @@ dialog { box-shadow: 0 12px 48px #0002; }
     <div><h2 id="readerTitle" tabindex="-1">精選事件</h2><p id="appliedSummary"></p></div>
     <div class="reader-actions">
       <button type="button" id="openDirectory">事件目錄</button>
-      <button type="button" id="openPreferences" aria-haspopup="dialog">閱讀設定</button>
-      <button type="button" id="shareReading">分享</button>
-    </div>
-  </div>
-  <div class="reader-find">
-    <form id="readerSearchForm" role="search" aria-label="搜尋目前年表">
-      <label for="readerQuery">搜尋事件</label>
-      <div class="search-line"><input type="search" id="readerQuery" placeholder="年份、事件名稱或內文" autocomplete="off" aria-controls="readerSearchResults"><button type="submit">搜尋</button><button type="button" id="clearReaderQuery" hidden>清除</button></div>
-    </form>
     <details id="quickFilters">
       <summary>年代與類別</summary>
       <div class="quick-filter-fields">
@@ -488,12 +461,11 @@ dialog { box-shadow: 0 12px 48px #0002; }
         <button type="button" class="text-button" id="resetQuickFilters">恢復全部事件</button>
       </div>
     </details>
+      <button type="button" id="openPreferences" aria-haspopup="dialog">閱讀設定</button>
+      <button type="button" id="shareReading">分享</button>
+    </div>
   </div>
   <div id="activeFilters" class="active-filters" aria-label="目前篩選條件"></div>
-  <section id="readerSearchPanel" class="reader-search-panel" hidden aria-label="事件搜尋結果">
-    <p id="readerSearchCount" role="status"></p>
-    <ol id="readerSearchResults" class="directory-results"></ol>
-  </section>
   <nav id="decadeNav" class="decade-nav" aria-label="跳到年代"></nav>
 </div>
 <div class="reading-position"><p id="positionLabel" aria-live="off"></p><div class="move-controls"><button type="button" id="earlier" aria-label="上一組事件">← 上一組</button><button type="button" id="later" aria-label="下一組事件">下一組 →</button></div></div>
@@ -511,7 +483,6 @@ dialog { box-shadow: 0 12px 48px #0002; }
     <div class="tour-actions"><button type="button" id="tourPrevious">上一步</button><button type="button" class="primary" id="tourNext">下一步</button><button type="button" class="text-button" id="tourExit">結束說明</button></div>
   </div>
 </dialog>
-<dialog id="audioDemoDialog" aria-labelledby="audioDemoTitle"><form method="dialog"><button aria-label="關閉試聽錄音">關閉 ×</button></form><h2 id="audioDemoTitle">試聽錄音</h2><p>這段英文合成語音可實際播放。可調整速度，或點逐字稿的時間跳到該段。</p><div id="audioDemoContent"></div></dialog>
 <dialog id="preferencesDialog" aria-labelledby="preferencesTitle">
   <h2 id="preferencesTitle">閱讀設定</h2>
   <form method="dialog" class="preferences-form">
@@ -946,16 +917,15 @@ const ReaderData = (() => {
   el('filterForm').addEventListener('submit',e=>{e.preventDefault();if(state.draft.types.length)commit(state.draft);});
   el('readAll').addEventListener('click',()=>commit(D.defaults()));el('cancelFilters').addEventListener('click',()=>{state.draft=D.clone(state.applied);mode('read');});
   function mediaFor(event){return READER_MEDIA.items.filter(m=>!m.sample&&(m.events?.includes(event.id)||(m.allNews&&event.track==='news')));}
-  function mediaHtml(event,{samples=false,kind=null}={}){
-    const items=(samples?READER_MEDIA.items.filter(item=>item.sample):mediaFor(event)).filter(item=>!kind||item.kind===kind);if(!items.length)return '';
-    const title = kind ? '' : '<h3>事件附件</h3>';
-    const notice = !kind && items.some(item=>item.sample) ? '<p class="sample-notice">以下示例僅呈現附件樣式，與歷史事件沒有史料關聯。</p>' : '';
+  function mediaHtml(event,{samples=false}={}){
+    const items=samples?READER_MEDIA.items.filter(item=>item.sample):mediaFor(event);if(!items.length)return '';
+    const title = '<h3>事件附件</h3>';
+    const notice = items.some(item=>item.sample) ? '<p class="sample-notice">以下示例僅呈現附件樣式，與歷史事件沒有史料關聯。</p>' : '';
     const selector = items.length > 1 ? `<div class="media-switch" role="group" aria-label="選擇附件">${items.map((item,index)=>`<button type="button" data-media-select="${esc(item.id)}" aria-pressed="${index===0}">${({photo:'照片',clip:'剪報',audio:'錄音'})[item.kind]}</button>`).join('')}</div>` : '';
-    const headingTag = kind ? 'h3' : 'h4';
-    return `<section class="media-section" aria-label="${kind?'錄音示例':'事件附件'}">${title}${notice}${selector}${items.map((m,i)=>{
+    return `<section class="media-section" aria-label="事件附件">${title}${notice}${selector}${items.map((m,i)=>{
       const key=event.id+'-'+m.id,badge=m.sample?'<span class="sample-badge">示意</span>':'';
-      if(m.kind==='audio')return `<section class="media-item" data-kind="audio" data-media-panel="${esc(m.id)}"${i?' hidden':''}><${headingTag}>${esc(m.title)}${badge}</${headingTag}><audio id="audio-${key}" class="audio-player" controls preload="none" src="${esc(m.src)}" aria-label="${esc(m.title+(m.sample?'，合成語音示例':''))}"></audio><p class="audio-error" hidden>音檔目前無法載入；仍可閱讀下方逐字稿。</p><label class="audio-speed">播放速度<select data-audio-speed="audio-${key}"><option value="0.75">0.75 倍</option><option value="1" selected>1 倍</option><option value="1.25">1.25 倍</option><option value="1.5">1.5 倍</option></select></label><p class="media-caption">${esc(m.caption||'')}</p><details class="transcript more"><summary>閱讀逐字稿與中文對照</summary><ol>${(m.segments||[]).map((s,i)=>`<li data-audio="audio-${key}" data-segment="${i}" data-start="${s.time}"><button type="button" data-seek="${s.time}" data-player="audio-${key}">${Math.floor(s.time/60)}:${String(Math.floor(s.time%60)).padStart(2,'0')} 跳至此段</button><p>${esc(s.text)}</p>${s.translation?`<p class="translation">${esc(s.translation)}</p>`:''}</li>`).join('')}</ol></details></section>`;
-      return `<figure class="media-item" data-kind="${esc(m.kind)}" data-media-panel="${esc(m.id)}"${i?' hidden':''}><${headingTag}>${esc(m.title)}${badge}</${headingTag}><button class="image-button" type="button" data-image="${esc(m.id)}" aria-label="放大${esc(m.title)}"><img src="${esc(m.src)}" alt="${esc(m.alt||m.title)}" loading="lazy" width="${m.kind==='photo'?600:640}" height="${m.kind==='photo'?400:480}"></button><figcaption class="media-caption">${esc(m.caption||'')}</figcaption>${m.kind==='clip'?`<details class="more"><summary>閱讀剪報文字說明</summary><p>${esc(m.text||'原件文字待補。')}</p></details>`:''}</figure>`;
+      if(m.kind==='audio')return `<section class="media-item" data-kind="audio" data-media-panel="${esc(m.id)}"${i?' hidden':''}><h4>${esc(m.title)}${badge}</h4><audio id="audio-${key}" class="audio-player" controls preload="none" src="${esc(m.src)}" aria-label="${esc(m.title+(m.sample?'，合成語音示例':''))}"></audio><p class="audio-error" hidden>音檔目前無法載入；仍可閱讀下方逐字稿。</p><label class="audio-speed">播放速度<select data-audio-speed="audio-${key}"><option value="0.75">0.75 倍</option><option value="1" selected>1 倍</option><option value="1.25">1.25 倍</option><option value="1.5">1.5 倍</option></select></label><p class="media-caption">${esc(m.caption||'')}</p><details class="transcript more"><summary>閱讀逐字稿與中文對照</summary><ol>${(m.segments||[]).map((s,i)=>`<li data-audio="audio-${key}" data-segment="${i}" data-start="${s.time}"><button type="button" data-seek="${s.time}" data-player="audio-${key}">${Math.floor(s.time/60)}:${String(Math.floor(s.time%60)).padStart(2,'0')} 跳至此段</button><p>${esc(s.text)}</p>${s.translation?`<p class="translation">${esc(s.translation)}</p>`:''}</li>`).join('')}</ol></details></section>`;
+      return `<figure class="media-item" data-kind="${esc(m.kind)}" data-media-panel="${esc(m.id)}"${i?' hidden':''}><h4>${esc(m.title)}${badge}</h4><button class="image-button" type="button" data-image="${esc(m.id)}" aria-label="放大${esc(m.title)}"><img src="${esc(m.src)}" alt="${esc(m.alt||m.title)}" loading="lazy" width="${m.kind==='photo'?600:640}" height="${m.kind==='photo'?400:480}"></button><figcaption class="media-caption">${esc(m.caption||'')}</figcaption>${m.kind==='clip'?`<details class="more"><summary>閱讀剪報文字說明</summary><p>${esc(m.text||'原件文字待補。')}</p></details>`:''}</figure>`;
     }).join('')}</section>`;
   }
   function eventHtml(e){
@@ -970,7 +940,7 @@ const ReaderData = (() => {
     const label=D.summary(state.applied);el('appliedSummary').textContent=label;
     el('positionLabel').parentElement.hidden=!list.length;
     el('decadeNav').hidden=!list.length;
-    renderDecades();bindAudio();applyPrefs();syncNav();syncQuickFilters();renderReaderSearch();
+    renderDecades();bindAudio();applyPrefs();syncNav();syncQuickFilters();
   }
   function bindAudio(root=el('timeline')){all('audio',root).forEach(audio=>{
     audio.addEventListener('play',()=>all('audio').forEach(other=>{if(other!==audio)other.pause();}));
@@ -1194,40 +1164,6 @@ const ReaderData = (() => {
       ).join('')}</ol></section></li>`;
     }).join('');
   }
-  function renderReaderSearch(){
-    const query = el('readerQuery').value.trim();
-    el('readerSearchPanel').hidden = !query;
-    el('clearReaderQuery').hidden = !query;
-    const results = query ? D.searchEvents(lastList, query) : [];
-    el('readerSearchCount').textContent = query ?
-      `找到 ${results.length} 件事件，目前範圍共 ${lastList.length} 件。` : '';
-    el('readerSearchResults').innerHTML = groupedEvents(results, 'search');
-  }
-  el('readerQuery').addEventListener('input',renderReaderSearch);
-  el('readerQuery').addEventListener('keydown',event => {
-    if(event.key === 'Escape'){
-      el('readerQuery').value = '';
-      renderReaderSearch();
-    }
-  });
-  el('clearReaderQuery').addEventListener('click',()=>{
-    el('readerQuery').value = '';
-    renderReaderSearch();
-    el('readerQuery').focus();
-  });
-  el('readerSearchForm').addEventListener('submit',event=>{
-    event.preventDefault();
-    renderReaderSearch();
-    el('readerSearchResults').querySelector('button')?.focus();
-  });
-  el('readerSearchResults').addEventListener('click',event=>{
-    const button = event.target.closest('[data-jump-event]');
-    if(!button) return;
-    el('readerQuery').value = '';
-    renderReaderSearch();
-    jump(button.dataset.jumpEvent,{expand:true,focus:true});
-    say('已移到並展開該事件。');
-  });
   el('quickFilters').addEventListener('change',()=>{
     const filters = D.clone(state.applied);
     filters.decades = all('[data-quick-filter="decades"]:checked').map(input=>Number(input.value));
@@ -1235,6 +1171,17 @@ const ReaderData = (() => {
     filters.terms = all('[data-quick-filter="terms"]:checked').map(input=>input.value);
     commit(D.normalize(filters),{focus:false});
     say(`目前顯示 ${lastList.length} 件事件。`);
+  });
+  el('quickFilters').addEventListener('keydown',event=>{
+    if(event.key!=='Escape') return;
+    event.preventDefault();
+    el('quickFilters').open=false;
+    el('quickFilters').querySelector('summary').focus();
+  });
+  document.addEventListener('click',event=>{
+    if(!el('quickFilters').contains(event.target) && !event.target.closest('[data-action="edit"]')){
+      el('quickFilters').open=false;
+    }
   });
   el('resetQuickFilters').addEventListener('click',()=>{
     commit(D.defaults(),{focus:false});
@@ -1300,9 +1247,6 @@ const ReaderData = (() => {
     placeTour();
   }
   el('startTour').addEventListener('click',()=>{
-    const sharedSteps = [
-      {target:el('openAudioDemo'),title:'實際試聽錄音',text:'結束說明後，按「試聽錄音」可播放合成語音、調整速度，並點逐字稿時間跳到該段。'}
-    ];
     if(state.mode==='read'){
       const viewport = el('timelineViewport').getBoundingClientRect();
       const firstVisible = all('#timeline>li').find(item=>{
@@ -1310,7 +1254,6 @@ const ReaderData = (() => {
         return state.view==='list' ? bounds.bottom>0 : bounds.right>viewport.left+1;
       });
       tourSteps=[
-        {target:el('readerSearchForm'),title:'直接找事件',text:'輸入年份、事件名稱或內文。結果按年代分組，點選後會移到並展開事件。'},
         {target:el('quickFilters').querySelector('summary'),title:'原地調整閱讀範圍',text:'展開「年代與類別」後，可複選年代和類型。條件會立即套用，也能直接清除已選條件。'},
         {target:el('decadeNav'),title:'跳到另一個年代',text:'點選年代即可定位到該年代的第一件事件。下方會顯示目前可見的事件範圍。'},
         {target:firstVisible?.querySelector('.event-details>summary'),title:'點加號開始閱讀',text:'點年份、標題或加號可展開介紹，也能同時展開多件事件。畫面中只要有事件展開，滑鼠滾輪就用來上下閱讀。'},
@@ -1328,7 +1271,7 @@ const ReaderData = (() => {
         {target:el('typeOptions'),title:'選擇事件類型',text:'可依類型挑選事件，顏色和文字會一起標示類別。選好後按「開始閱讀」。'}
       ];
     }
-    tourSteps=[...tourSteps,...sharedSteps].filter(step=>step.target?.getClientRects().length);
+    tourSteps=tourSteps.filter(step=>step.target?.getClientRects().length);
     tourIndex=0;tourScroll=window.scrollY;
     tour.showModal();
     showTourStep();
@@ -1347,7 +1290,7 @@ const ReaderData = (() => {
   window.addEventListener('scroll',placeTour,{passive:true});
   el('clearNewsScope').addEventListener('click',()=>{state.newsAll=true;state.limit=40;renderNews();});
   el('imageZoom').addEventListener('click',()=>{const zoom=el('imageCanvas').classList.toggle('zoomed');el('imageZoom').textContent=zoom?'縮回完整圖片':'放大圖片';el('imageZoom').setAttribute('aria-pressed',String(zoom));});
-  all('#timeline,#aboutSamples,#audioDemoContent').forEach(root=>root.addEventListener('click',e=>{
+  all('#timeline,#aboutSamples').forEach(root=>root.addEventListener('click',e=>{
     const b=e.target.closest('button');if(!b)return;
     if(b.dataset.mediaSelect){const section=b.closest('.media-section');pauseAudio(section);all('[data-media-panel]',section).forEach(p=>p.hidden=p.dataset.mediaPanel!==b.dataset.mediaSelect);all('[data-media-select]',section).forEach(t=>t.setAttribute('aria-pressed',String(t===b)));}
     if(b.dataset.shareEvent)share(b.dataset.shareEvent);
@@ -1358,9 +1301,6 @@ const ReaderData = (() => {
   window.addEventListener('popstate',restoreRoute);
   el('aboutSamples').innerHTML=mediaHtml({id:'about'},{samples:true});
   bindAudio(el('aboutSamples'));
-  el('audioDemoContent').innerHTML=mediaHtml({id:'demo'},{samples:true,kind:'audio'});
-  bindAudio(el('audioDemoContent'));
-  el('openAudioDemo').addEventListener('click',()=>el('audioDemoDialog').showModal());
   all('dialog').forEach(dialog=>dialog.addEventListener('close',()=>pauseAudio(dialog)));
   syncPicker();applyPrefs();updateResume();restoreRoute();
 
