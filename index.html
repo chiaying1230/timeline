@@ -326,6 +326,75 @@ dialog { box-shadow: 0 12px 48px #0002; }
   }
   .primary:hover { background: #f1c8b4; color: var(--on); border-color: #f1c8b4; }
 }
+
+/* Collection search and an in-place index use the same typographic hierarchy. */
+:root { --active: #343a3c; }
+.primary:hover { background: #202628; border-color: #202628; }
+.reader-find {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: .75rem 2rem;
+  padding: .35rem 0 .85rem;
+}
+#readerSearchForm { flex: 0 1 30rem; min-width: 0; }
+#readerSearchForm > label { display: block; font-size: .85rem; margin-bottom: .3rem; }
+.search-line { display: flex; gap: .5rem; }
+.search-line input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: .5rem .65rem;
+  border: 1px solid var(--control-edge);
+  background: var(--paper);
+  font: inherit;
+  font-size: 1rem;
+}
+.search-line button { flex: none; font-size: .85rem; }
+#quickFilters { flex: 1 1 16rem; padding-top: 1.7rem; }
+#quickFilters > summary { min-height: 44px; padding-block: .5rem; cursor: pointer; font-size: .9rem; }
+.quick-filter-fields { padding: .5rem 0 1rem; }
+.quick-filter-fields fieldset { margin: .6rem 0; }
+.quick-filter-fields legend { font-size: .9rem; margin-bottom: .4rem; }
+.quick-filter-fields .types { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.active-filters { display: flex; flex-wrap: wrap; gap: 0 1.25rem; padding-bottom: .5rem; }
+.active-filters:empty { display: none; }
+.active-filters button {
+  border: 0;
+  padding: .3rem 0;
+  font-size: .85rem;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: .3em;
+}
+.active-filters button span { margin-left: .35rem; }
+.reader-search-panel { border-block: 1px solid var(--line); padding: 1rem 0; margin-bottom: 1rem; }
+#readerSearchCount { font-size: .9rem; margin-bottom: .5rem; }
+.directory-results > .directory-group { border: 0; }
+.directory-group h3 {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+  font: 500 1.15rem/1.7 var(--serif);
+  padding: 1rem 0 .4rem;
+}
+.directory-group h3 span { font: 400 .8rem/1.7 var(--sans); color: var(--muted); }
+.directory-group ol { list-style: none; margin: 0; padding: 0; }
+.directory-group li { border-top: 1px solid var(--line); }
+.directory-results .directory-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem; }
+.directory-results .category { display: inline; color: var(--category); }
+.directory-results strong { display: block; }
+.reader-search-panel .directory-group ol { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 1.75rem; }
+@media(max-width:700px) {
+  .reader-find { display: block; padding-bottom: .5rem; }
+  #quickFilters { padding-top: .25rem; }
+  .reader-search-panel .directory-group ol { display: block; }
+}
+@media(prefers-color-scheme:dark) {
+  :root { --active: #d8d9d6; }
+  .primary:hover { background: #f0f0ec; border-color: #f0f0ec; }
+}
+@media print { .reader-find, .active-filters, .reader-search-panel { display: none; } }
 </style></head><body>
 <noscript><p>請開啟 JavaScript 以使用篩選與年表。原始資料與整理方式也可在本網站的 README 閱讀。</p></noscript>
 <a class="skip" href="#content">跳到主要內容</a>
@@ -359,11 +428,30 @@ dialog { box-shadow: 0 12px 48px #0002; }
     <div><h2 id="readerTitle" tabindex="-1">精選事件</h2><p id="appliedSummary"></p></div>
     <div class="reader-actions">
       <button type="button" id="editFilters">調整範圍</button>
-      <button type="button" id="openDirectory">找事件</button>
+      <button type="button" id="openDirectory">事件目錄</button>
       <button type="button" id="openPreferences" aria-haspopup="dialog">閱讀設定</button>
       <button type="button" id="shareReading">分享</button>
     </div>
   </div>
+  <div class="reader-find">
+    <form id="readerSearchForm" role="search" aria-label="搜尋目前年表">
+      <label for="readerQuery">搜尋事件</label>
+      <div class="search-line"><input type="search" id="readerQuery" placeholder="年份、事件名稱或內文" autocomplete="off" aria-controls="readerSearchResults"><button type="submit">搜尋</button><button type="button" id="clearReaderQuery" hidden>清除</button></div>
+    </form>
+    <details id="quickFilters">
+      <summary>年代與類別</summary>
+      <div class="quick-filter-fields">
+        <fieldset><legend>年代 <small>可複選；不選就是全部</small></legend><div id="quickDecades" class="choices decades"></div></fieldset>
+        <fieldset><legend>事件類型 <small>可複選</small></legend><div id="quickTypes" class="choices types"></div></fieldset>
+        <button type="button" class="text-button" id="resetQuickFilters">恢復全部事件</button>
+      </div>
+    </details>
+  </div>
+  <div id="activeFilters" class="active-filters" aria-label="目前篩選條件"></div>
+  <section id="readerSearchPanel" class="reader-search-panel" hidden aria-label="事件搜尋結果">
+    <p id="readerSearchCount" role="status"></p>
+    <ol id="readerSearchResults" class="directory-results"></ol>
+  </section>
   <nav id="decadeNav" class="decade-nav" aria-label="跳到年代"></nav>
 </div>
 <div class="reading-position"><p id="positionLabel" aria-live="off"></p><div class="move-controls"><button type="button" id="earlier" aria-label="移到較早的事件">← 較早</button><button type="button" id="later" aria-label="移到較晚的事件">較晚 →</button></div></div>
@@ -759,8 +847,8 @@ const ReaderData = (() => {
     const first = items.find(item => item.getBoundingClientRect().right > left + 1);
     if(first) state.anchor = first.dataset.event;
   }
-  function mode(next,{history=true,focus=true}={}) {
-    capturePosition();pauseAudio();state.mode=next;document.body.dataset.mode=next;
+  function mode(next,{history=true,focus=true,capture=true}={}) {
+    if(capture)capturePosition();pauseAudio();state.mode=next;document.body.dataset.mode=next;
     Object.entries(modes).forEach(([key,id])=>el(id).hidden=key!==next);
     el('navNews').setAttribute('aria-current',next==='news'?'page':'false');
     if(history){const hash=next==='read'?'#read':next==='news'?'#clippings':'#filters';if(location.hash.split('?')[0]!==hash)window.history.pushState({reader:true},'',hash);writeLocation();}
@@ -770,14 +858,16 @@ const ReaderData = (() => {
     } else if(next==='select'){syncPicker();window.scrollTo(0,0);if(focus)el('selectionTitle').focus({preventScroll:true});}
     else {window.scrollTo(0,0);if(focus)el('newsTitle').focus({preventScroll:true});}
   }
-  function addChoice(container,id,label,key,kind){
-    const item=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.id=id;input.value=String(key);input.dataset.filter=kind;item.append(input,document.createTextNode(label));if(kind==='types')item.style.setProperty('--category','var(--'+key+')');container.append(item);
+  function addChoice(container,id,label,key,kind,scope='filter'){
+    const item=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.id=id;input.value=String(key);input.dataset[scope]=kind;item.append(input,document.createTextNode(label));if(kind==='types')item.style.setProperty('--category','var(--'+key+')');container.append(item);
   }
   D.decades.forEach(d=>addChoice(el('decadeOptions'),'decade-'+d,d+' 年代',d,'decades'));
   D.types.forEach(t=>addChoice(el('typeOptions'),'type-'+t,TRACKS[t].name,t,'types'));
   D.terms.forEach((t,i)=>addChoice(el('wordOptions'),'word-'+i,t,t,'terms'));
+  D.decades.forEach(d=>addChoice(el('quickDecades'),'quick-decade-'+d,d+' 年代',d,'decades','quickFilter'));
+  D.types.forEach(t=>addChoice(el('quickTypes'),'quick-type-'+t,TRACKS[t].name,t,'types','quickFilter'));
   function syncPicker(){
-    const f=state.draft;all('[data-filter]').forEach(i=>i.checked=f[i.dataset.filter].includes(i.dataset.filter==='decades'?Number(i.value):i.value));
+    const f=state.draft;all('[data-filter]',el('filterForm')).forEach(i=>i.checked=f[i.dataset.filter].includes(i.dataset.filter==='decades'?Number(i.value):i.value));
     el('wordField').hidden=!D.onlyNews(f);const matches=D.filterEvents(f), n=matches.length;el('filterPreview').textContent=n?('從 '+matches[0].y+' 年到 '+matches[n-1].y+' 年；第一件：'+D.title(matches[0])):'試著減少限制，或重設條件。';
     el('filterCount').textContent=!f.types.length?'請至少選取一種事件類型。':`符合 ${n} 件精選事件，共 ${EV.length} 件。`;
     el('applyButton').disabled=!f.types.length;
@@ -787,17 +877,18 @@ const ReaderData = (() => {
   }
   function edit(){capturePosition();state.draft=D.clone(state.applied);mode('select');}
   el('filterForm').addEventListener('change',()=>{
-    const value={decades:[],types:[],terms:[]};all('[data-filter]:checked').forEach(i=>value[i.dataset.filter].push(i.value));
+    const value={decades:[],types:[],terms:[]};all('[data-filter]:checked',el('filterForm')).forEach(i=>value[i.dataset.filter].push(i.value));
     state.draft=D.normalize(value);syncPicker();
   });
   el('selectAllTypes').addEventListener('click',()=>{state.draft.types=[...D.types];state.draft.terms=[];syncPicker();});
   el('onlyNews').addEventListener('click',()=>{state.draft.types=['news'];syncPicker();say('已選取剪報，現在可以設定新聞用語。');});
-  function commit(f){
+  function commit(f,{focus=true}={}){
+    capturePosition();
     const oldAnchor=state.anchor, changed=JSON.stringify(f)!==JSON.stringify(state.applied), first=!state.hasRead;
     state.applied=D.clone(f);state.hasRead=true;
-    if(first||changed){pauseAudio();lastList=D.filterEvents(state.applied);renderTimeline(lastList);const target=first?lastList[0]:D.nearest(lastList,oldAnchor);state.anchor=target?.id||null;state.scroll=target?offsetFor(target.id):0;state.pageScroll=0;}
+    if(first||changed){pauseAudio();lastList=D.filterEvents(state.applied);renderTimeline(lastList);const target=first?lastList[0]:D.nearest(lastList,oldAnchor);state.anchor=target?.id||null;state.scroll=target?offsetFor(target.id):0;state.pageScroll=focus?0:window.scrollY;}
     const targetId=state.anchor;
-    mode('read');if(first||changed)requestAnimationFrame(()=>jump(targetId,{smooth:false}));say('');
+    mode('read',{focus,capture:false});if(first||changed)requestAnimationFrame(()=>jump(targetId,{smooth:false}));say('');
   }
   el('filterForm').addEventListener('submit',e=>{e.preventDefault();if(state.draft.types.length)commit(state.draft);});
   el('readAll').addEventListener('click',()=>commit(D.defaults()));el('cancelFilters').addEventListener('click',()=>{state.draft=D.clone(state.applied);mode('read');});
@@ -824,7 +915,7 @@ const ReaderData = (() => {
     const label=D.summary(state.applied);el('appliedSummary').textContent=label;
     el('positionLabel').parentElement.hidden=!list.length;
     el('decadeNav').hidden=!list.length;
-    renderDecades();bindAudio();applyPrefs();syncNav();
+    renderDecades();bindAudio();applyPrefs();syncNav();syncQuickFilters();renderReaderSearch();
   }
   function bindAudio(){all('audio',el('timeline')).forEach(audio=>{
     audio.addEventListener('play',()=>all('audio').forEach(other=>{if(other!==audio)other.pause();}));
@@ -962,7 +1053,15 @@ const ReaderData = (() => {
     const behavior='instant';
     if(state.view==='list'){item.scrollIntoView({block:'start',behavior});}
     else {state.scroll=offsetFor(id);el('timelineViewport').scrollTo({left:state.scroll,top:0,behavior});}
-    if(focus)detail.querySelector('summary').focus({preventScroll:true});syncPosition({forceFollow:true});queueSave();
+    if(focus){
+      const summary = detail.querySelector('summary');
+      summary.focus({preventScroll:true});
+      const bounds = summary.getBoundingClientRect();
+      if(bounds.top < 0 || bounds.bottom > window.innerHeight){
+        summary.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});
+      }
+    }
+    syncPosition({forceFollow:true});queueSave();
   }
   function setView(view){
     state.view=view;document.body.classList.toggle('list-view',view==='list');
@@ -983,11 +1082,91 @@ const ReaderData = (() => {
     if(route==='clippings'){renderNews();mode('news',{history:false,focus:false});return;}
     state.draft=D.clone(state.applied);mode('select',{history:false,focus:false});
   }
+  function syncQuickFilters(){
+    const filters = state.applied;
+    all('[data-quick-filter]').forEach(input => {
+      const key = input.dataset.quickFilter;
+      input.checked = filters[key].includes(key === 'decades' ? Number(input.value) : input.value);
+    });
+    const removals = [
+      ...filters.decades.map(value => ({kind:'decades',value,label:value+' 年代'})),
+      ...(filters.types.length !== D.types.length ? [{kind:'types',value:'',label:filters.types.map(type=>TRACKS[type].name).join('、') || '未選事件類型'}] : []),
+      ...filters.terms.map(value => ({kind:'terms',value,label:value}))
+    ];
+    el('activeFilters').innerHTML = removals.map(item =>
+      `<button type="button" data-remove-filter="${item.kind}" data-value="${esc(item.value)}" aria-label="移除${esc(item.label)}篩選">${esc(item.label)} <span aria-hidden="true">×</span></button>`
+    ).join('');
+    el('activeFilters').hidden = !removals.length;
+  }
+  function groupedEvents(results, prefix){
+    return D.decades.map(decade => {
+      const events = results.filter(event => event.dec === decade);
+      if(!events.length) return '';
+      return `<li class="directory-group"><section aria-labelledby="${prefix}-${decade}"><h3 id="${prefix}-${decade}">${decade} 年代 <span>${events.length} 件</span></h3><ol>${events.map(event =>
+        `<li><button type="button" data-jump-event="${esc(event.id)}"><span class="directory-meta">${event.y} 年 <span class="category" style="--category:var(--${event.track})">${esc(TRACKS[event.track].name)}</span></span><strong>${esc(D.title(event))}</strong></button></li>`
+      ).join('')}</ol></section></li>`;
+    }).join('');
+  }
+  function renderReaderSearch(){
+    const query = el('readerQuery').value.trim();
+    el('readerSearchPanel').hidden = !query;
+    el('clearReaderQuery').hidden = !query;
+    const results = query ? D.searchEvents(lastList, query) : [];
+    el('readerSearchCount').textContent = query ?
+      `找到 ${results.length} 件事件，目前範圍共 ${lastList.length} 件。` : '';
+    el('readerSearchResults').innerHTML = groupedEvents(results, 'search');
+  }
+  el('readerQuery').addEventListener('input',renderReaderSearch);
+  el('readerQuery').addEventListener('keydown',event => {
+    if(event.key === 'Escape'){
+      el('readerQuery').value = '';
+      renderReaderSearch();
+    }
+  });
+  el('clearReaderQuery').addEventListener('click',()=>{
+    el('readerQuery').value = '';
+    renderReaderSearch();
+    el('readerQuery').focus();
+  });
+  el('readerSearchForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    renderReaderSearch();
+    el('readerSearchResults').querySelector('button')?.focus();
+  });
+  el('readerSearchResults').addEventListener('click',event=>{
+    const button = event.target.closest('[data-jump-event]');
+    if(!button) return;
+    el('readerQuery').value = '';
+    renderReaderSearch();
+    jump(button.dataset.jumpEvent,{expand:true,focus:true});
+    say('已移到並展開該事件。');
+  });
+  el('quickFilters').addEventListener('change',()=>{
+    const filters = D.clone(state.applied);
+    filters.decades = all('[data-quick-filter="decades"]:checked').map(input=>Number(input.value));
+    filters.types = all('[data-quick-filter="types"]:checked').map(input=>input.value);
+    commit(D.normalize(filters),{focus:false});
+    say(`目前顯示 ${lastList.length} 件事件。`);
+  });
+  el('resetQuickFilters').addEventListener('click',()=>{
+    commit(D.defaults(),{focus:false});
+    say('已恢復全部事件。');
+  });
+  el('activeFilters').addEventListener('click',event=>{
+    const button = event.target.closest('[data-remove-filter]');
+    if(!button) return;
+    const filters = D.clone(state.applied), kind = button.dataset.removeFilter;
+    filters[kind] = kind === 'types' ? [...D.types] :
+      filters[kind].filter(value=>String(value)!==button.dataset.value);
+    commit(D.normalize(filters),{focus:false});
+    el('quickFilters').querySelector('summary').focus({preventScroll:true});
+    say(`目前顯示 ${lastList.length} 件事件。`);
+  });
   function renderDirectory(){
     const results=D.searchEvents(lastList,el('eventQuery').value);
     el('directoryCount').textContent=`找到 ${results.length} 件，目前閱讀範圍共 ${lastList.length} 件。`;
     el('directoryEmpty').hidden=!!results.length;
-    el('directoryResults').innerHTML=results.map(e=>`<li><button type="button" data-jump-event="${esc(e.id)}"><span>${e.y} 年 · ${esc(TRACKS[e.track].name)}</span><strong>${esc(D.title(e))}</strong></button></li>`).join('');
+    el('directoryResults').innerHTML=groupedEvents(results, 'directory');
   }
   function share(id){
     capturePosition();const saved=snapshot();if(id){saved.anchor=id;if(!saved.open.includes(id))saved.open.push(id);}

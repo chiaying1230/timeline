@@ -29,11 +29,30 @@
     <div><h2 id="readerTitle" tabindex="-1">精選事件</h2><p id="appliedSummary"></p></div>
     <div class="reader-actions">
       <button type="button" id="editFilters">調整範圍</button>
-      <button type="button" id="openDirectory">找事件</button>
+      <button type="button" id="openDirectory">事件目錄</button>
       <button type="button" id="openPreferences" aria-haspopup="dialog">閱讀設定</button>
       <button type="button" id="shareReading">分享</button>
     </div>
   </div>
+  <div class="reader-find">
+    <form id="readerSearchForm" role="search" aria-label="搜尋目前年表">
+      <label for="readerQuery">搜尋事件</label>
+      <div class="search-line"><input type="search" id="readerQuery" placeholder="年份、事件名稱或內文" autocomplete="off" aria-controls="readerSearchResults"><button type="submit">搜尋</button><button type="button" id="clearReaderQuery" hidden>清除</button></div>
+    </form>
+    <details id="quickFilters">
+      <summary>年代與類別</summary>
+      <div class="quick-filter-fields">
+        <fieldset><legend>年代 <small>可複選；不選就是全部</small></legend><div id="quickDecades" class="choices decades"></div></fieldset>
+        <fieldset><legend>事件類型 <small>可複選</small></legend><div id="quickTypes" class="choices types"></div></fieldset>
+        <button type="button" class="text-button" id="resetQuickFilters">恢復全部事件</button>
+      </div>
+    </details>
+  </div>
+  <div id="activeFilters" class="active-filters" aria-label="目前篩選條件"></div>
+  <section id="readerSearchPanel" class="reader-search-panel" hidden aria-label="事件搜尋結果">
+    <p id="readerSearchCount" role="status"></p>
+    <ol id="readerSearchResults" class="directory-results"></ol>
+  </section>
   <nav id="decadeNav" class="decade-nav" aria-label="跳到年代"></nav>
 </div>
 <div class="reading-position"><p id="positionLabel" aria-live="off"></p><div class="move-controls"><button type="button" id="earlier" aria-label="移到較早的事件">← 較早</button><button type="button" id="later" aria-label="移到較晚的事件">較晚 →</button></div></div>

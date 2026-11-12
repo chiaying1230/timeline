@@ -31,8 +31,8 @@
     const first = items.find(item => item.getBoundingClientRect().right > left + 1);
     if(first) state.anchor = first.dataset.event;
   }
-  function mode(next,{history=true,focus=true}={}) {
-    capturePosition();pauseAudio();state.mode=next;document.body.dataset.mode=next;
+  function mode(next,{history=true,focus=true,capture=true}={}) {
+    if(capture)capturePosition();pauseAudio();state.mode=next;document.body.dataset.mode=next;
     Object.entries(modes).forEach(([key,id])=>el(id).hidden=key!==next);
     el('navNews').setAttribute('aria-current',next==='news'?'page':'false');
     if(history){const hash=next==='read'?'#read':next==='news'?'#clippings':'#filters';if(location.hash.split('?')[0]!==hash)window.history.pushState({reader:true},'',hash);writeLocation();}
@@ -42,14 +42,16 @@
     } else if(next==='select'){syncPicker();window.scrollTo(0,0);if(focus)el('selectionTitle').focus({preventScroll:true});}
     else {window.scrollTo(0,0);if(focus)el('newsTitle').focus({preventScroll:true});}
   }
-  function addChoice(container,id,label,key,kind){
-    const item=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.id=id;input.value=String(key);input.dataset.filter=kind;item.append(input,document.createTextNode(label));if(kind==='types')item.style.setProperty('--category','var(--'+key+')');container.append(item);
+  function addChoice(container,id,label,key,kind,scope='filter'){
+    const item=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.id=id;input.value=String(key);input.dataset[scope]=kind;item.append(input,document.createTextNode(label));if(kind==='types')item.style.setProperty('--category','var(--'+key+')');container.append(item);
   }
   D.decades.forEach(d=>addChoice(el('decadeOptions'),'decade-'+d,d+' 年代',d,'decades'));
   D.types.forEach(t=>addChoice(el('typeOptions'),'type-'+t,TRACKS[t].name,t,'types'));
   D.terms.forEach((t,i)=>addChoice(el('wordOptions'),'word-'+i,t,t,'terms'));
+  D.decades.forEach(d=>addChoice(el('quickDecades'),'quick-decade-'+d,d+' 年代',d,'decades','quickFilter'));
+  D.types.forEach(t=>addChoice(el('quickTypes'),'quick-type-'+t,TRACKS[t].name,t,'types','quickFilter'));
   function syncPicker(){
-    const f=state.draft;all('[data-filter]').forEach(i=>i.checked=f[i.dataset.filter].includes(i.dataset.filter==='decades'?Number(i.value):i.value));
+    const f=state.draft;all('[data-filter]',el('filterForm')).forEach(i=>i.checked=f[i.dataset.filter].includes(i.dataset.filter==='decades'?Number(i.value):i.value));
     el('wordField').hidden=!D.onlyNews(f);const matches=D.filterEvents(f), n=matches.length;el('filterPreview').textContent=n?('從 '+matches[0].y+' 年到 '+matches[n-1].y+' 年；第一件：'+D.title(matches[0])):'試著減少限制，或重設條件。';
     el('filterCount').textContent=!f.types.length?'請至少選取一種事件類型。':`符合 ${n} 件精選事件，共 ${EV.length} 件。`;
     el('applyButton').disabled=!f.types.length;
@@ -59,17 +61,18 @@
   }
   function edit(){capturePosition();state.draft=D.clone(state.applied);mode('select');}
   el('filterForm').addEventListener('change',()=>{
-    const value={decades:[],types:[],terms:[]};all('[data-filter]:checked').forEach(i=>value[i.dataset.filter].push(i.value));
+    const value={decades:[],types:[],terms:[]};all('[data-filter]:checked',el('filterForm')).forEach(i=>value[i.dataset.filter].push(i.value));
     state.draft=D.normalize(value);syncPicker();
   });
   el('selectAllTypes').addEventListener('click',()=>{state.draft.types=[...D.types];state.draft.terms=[];syncPicker();});
   el('onlyNews').addEventListener('click',()=>{state.draft.types=['news'];syncPicker();say('已選取剪報，現在可以設定新聞用語。');});
-  function commit(f){
+  function commit(f,{focus=true}={}){
+    capturePosition();
     const oldAnchor=state.anchor, changed=JSON.stringify(f)!==JSON.stringify(state.applied), first=!state.hasRead;
     state.applied=D.clone(f);state.hasRead=true;
-    if(first||changed){pauseAudio();lastList=D.filterEvents(state.applied);renderTimeline(lastList);const target=first?lastList[0]:D.nearest(lastList,oldAnchor);state.anchor=target?.id||null;state.scroll=target?offsetFor(target.id):0;state.pageScroll=0;}
+    if(first||changed){pauseAudio();lastList=D.filterEvents(state.applied);renderTimeline(lastList);const target=first?lastList[0]:D.nearest(lastList,oldAnchor);state.anchor=target?.id||null;state.scroll=target?offsetFor(target.id):0;state.pageScroll=focus?0:window.scrollY;}
     const targetId=state.anchor;
-    mode('read');if(first||changed)requestAnimationFrame(()=>jump(targetId,{smooth:false}));say('');
+    mode('read',{focus,capture:false});if(first||changed)requestAnimationFrame(()=>jump(targetId,{smooth:false}));say('');
   }
   el('filterForm').addEventListener('submit',e=>{e.preventDefault();if(state.draft.types.length)commit(state.draft);});
   el('readAll').addEventListener('click',()=>commit(D.defaults()));el('cancelFilters').addEventListener('click',()=>{state.draft=D.clone(state.applied);mode('read');});
@@ -96,7 +99,7 @@
     const label=D.summary(state.applied);el('appliedSummary').textContent=label;
     el('positionLabel').parentElement.hidden=!list.length;
     el('decadeNav').hidden=!list.length;
-    renderDecades();bindAudio();applyPrefs();syncNav();
+    renderDecades();bindAudio();applyPrefs();syncNav();syncQuickFilters();renderReaderSearch();
   }
   function bindAudio(){all('audio',el('timeline')).forEach(audio=>{
     audio.addEventListener('play',()=>all('audio').forEach(other=>{if(other!==audio)other.pause();}));
@@ -234,7 +237,15 @@
     const behavior='instant';
     if(state.view==='list'){item.scrollIntoView({block:'start',behavior});}
     else {state.scroll=offsetFor(id);el('timelineViewport').scrollTo({left:state.scroll,top:0,behavior});}
-    if(focus)detail.querySelector('summary').focus({preventScroll:true});syncPosition({forceFollow:true});queueSave();
+    if(focus){
+      const summary = detail.querySelector('summary');
+      summary.focus({preventScroll:true});
+      const bounds = summary.getBoundingClientRect();
+      if(bounds.top < 0 || bounds.bottom > window.innerHeight){
+        summary.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});
+      }
+    }
+    syncPosition({forceFollow:true});queueSave();
   }
   function setView(view){
     state.view=view;document.body.classList.toggle('list-view',view==='list');
@@ -255,11 +266,91 @@
     if(route==='clippings'){renderNews();mode('news',{history:false,focus:false});return;}
     state.draft=D.clone(state.applied);mode('select',{history:false,focus:false});
   }
+  function syncQuickFilters(){
+    const filters = state.applied;
+    all('[data-quick-filter]').forEach(input => {
+      const key = input.dataset.quickFilter;
+      input.checked = filters[key].includes(key === 'decades' ? Number(input.value) : input.value);
+    });
+    const removals = [
+      ...filters.decades.map(value => ({kind:'decades',value,label:value+' 年代'})),
+      ...(filters.types.length !== D.types.length ? [{kind:'types',value:'',label:filters.types.map(type=>TRACKS[type].name).join('、') || '未選事件類型'}] : []),
+      ...filters.terms.map(value => ({kind:'terms',value,label:value}))
+    ];
+    el('activeFilters').innerHTML = removals.map(item =>
+      `<button type="button" data-remove-filter="${item.kind}" data-value="${esc(item.value)}" aria-label="移除${esc(item.label)}篩選">${esc(item.label)} <span aria-hidden="true">×</span></button>`
+    ).join('');
+    el('activeFilters').hidden = !removals.length;
+  }
+  function groupedEvents(results, prefix){
+    return D.decades.map(decade => {
+      const events = results.filter(event => event.dec === decade);
+      if(!events.length) return '';
+      return `<li class="directory-group"><section aria-labelledby="${prefix}-${decade}"><h3 id="${prefix}-${decade}">${decade} 年代 <span>${events.length} 件</span></h3><ol>${events.map(event =>
+        `<li><button type="button" data-jump-event="${esc(event.id)}"><span class="directory-meta">${event.y} 年 <span class="category" style="--category:var(--${event.track})">${esc(TRACKS[event.track].name)}</span></span><strong>${esc(D.title(event))}</strong></button></li>`
+      ).join('')}</ol></section></li>`;
+    }).join('');
+  }
+  function renderReaderSearch(){
+    const query = el('readerQuery').value.trim();
+    el('readerSearchPanel').hidden = !query;
+    el('clearReaderQuery').hidden = !query;
+    const results = query ? D.searchEvents(lastList, query) : [];
+    el('readerSearchCount').textContent = query ?
+      `找到 ${results.length} 件事件，目前範圍共 ${lastList.length} 件。` : '';
+    el('readerSearchResults').innerHTML = groupedEvents(results, 'search');
+  }
+  el('readerQuery').addEventListener('input',renderReaderSearch);
+  el('readerQuery').addEventListener('keydown',event => {
+    if(event.key === 'Escape'){
+      el('readerQuery').value = '';
+      renderReaderSearch();
+    }
+  });
+  el('clearReaderQuery').addEventListener('click',()=>{
+    el('readerQuery').value = '';
+    renderReaderSearch();
+    el('readerQuery').focus();
+  });
+  el('readerSearchForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    renderReaderSearch();
+    el('readerSearchResults').querySelector('button')?.focus();
+  });
+  el('readerSearchResults').addEventListener('click',event=>{
+    const button = event.target.closest('[data-jump-event]');
+    if(!button) return;
+    el('readerQuery').value = '';
+    renderReaderSearch();
+    jump(button.dataset.jumpEvent,{expand:true,focus:true});
+    say('已移到並展開該事件。');
+  });
+  el('quickFilters').addEventListener('change',()=>{
+    const filters = D.clone(state.applied);
+    filters.decades = all('[data-quick-filter="decades"]:checked').map(input=>Number(input.value));
+    filters.types = all('[data-quick-filter="types"]:checked').map(input=>input.value);
+    commit(D.normalize(filters),{focus:false});
+    say(`目前顯示 ${lastList.length} 件事件。`);
+  });
+  el('resetQuickFilters').addEventListener('click',()=>{
+    commit(D.defaults(),{focus:false});
+    say('已恢復全部事件。');
+  });
+  el('activeFilters').addEventListener('click',event=>{
+    const button = event.target.closest('[data-remove-filter]');
+    if(!button) return;
+    const filters = D.clone(state.applied), kind = button.dataset.removeFilter;
+    filters[kind] = kind === 'types' ? [...D.types] :
+      filters[kind].filter(value=>String(value)!==button.dataset.value);
+    commit(D.normalize(filters),{focus:false});
+    el('quickFilters').querySelector('summary').focus({preventScroll:true});
+    say(`目前顯示 ${lastList.length} 件事件。`);
+  });
   function renderDirectory(){
     const results=D.searchEvents(lastList,el('eventQuery').value);
     el('directoryCount').textContent=`找到 ${results.length} 件，目前閱讀範圍共 ${lastList.length} 件。`;
     el('directoryEmpty').hidden=!!results.length;
-    el('directoryResults').innerHTML=results.map(e=>`<li><button type="button" data-jump-event="${esc(e.id)}"><span>${e.y} 年 · ${esc(TRACKS[e.track].name)}</span><strong>${esc(D.title(e))}</strong></button></li>`).join('');
+    el('directoryResults').innerHTML=groupedEvents(results, 'directory');
   }
   function share(id){
     capturePosition();const saved=snapshot();if(id){saved.anchor=id;if(!saved.open.includes(id))saved.open.push(id);}
