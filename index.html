@@ -426,7 +426,6 @@ dialog { box-shadow: 0 12px 48px #0002; }
   <div class="reader-heading">
     <div><h2 id="readerTitle" tabindex="-1">精選事件</h2><p id="appliedSummary"></p></div>
     <div class="reader-actions">
-      <button type="button" id="editFilters">調整範圍</button>
       <button type="button" id="openDirectory">事件目錄</button>
       <button type="button" id="openPreferences" aria-haspopup="dialog">閱讀設定</button>
       <button type="button" id="shareReading">分享</button>
@@ -441,7 +440,7 @@ dialog { box-shadow: 0 12px 48px #0002; }
       <summary>年代與類別</summary>
       <div class="quick-filter-fields">
         <fieldset><legend>年代 <small>可複選；不選就是全部</small></legend><div id="quickDecades" class="choices decades"></div></fieldset>
-        <fieldset><legend>事件類型 <small>可複選</small></legend><div id="quickTypes" class="choices types"></div></fieldset>
+        <fieldset><legend>事件類型 <small>可複選</small></legend><div id="quickTypes" class="choices types"></div></fieldset><fieldset id="quickWordField" hidden><legend>新聞用語 <small>可複選</small></legend><p class="help">保留報紙當年的用詞，可能帶有歧視。</p><div id="quickWords" class="choices words"></div></fieldset>
         <button type="button" class="text-button" id="resetQuickFilters">恢復全部事件</button>
       </div>
     </details>
@@ -453,7 +452,7 @@ dialog { box-shadow: 0 12px 48px #0002; }
   </section>
   <nav id="decadeNav" class="decade-nav" aria-label="跳到年代"></nav>
 </div>
-<div class="reading-position"><p id="positionLabel" aria-live="off"></p><div class="move-controls"><button type="button" id="earlier" aria-label="移到較早的事件">← 較早</button><button type="button" id="later" aria-label="移到較晚的事件">較晚 →</button></div></div>
+<div class="reading-position"><p id="positionLabel" aria-live="off"></p><div class="move-controls"><button type="button" id="earlier" aria-label="上一組事件">← 上一組</button><button type="button" id="later" aria-label="下一組事件">下一組 →</button></div></div>
 <div id="timelineViewport" class="timeline-viewport" role="region" aria-label="可左右捲動的精選年表" tabindex="0"><ol id="timeline" class="timeline"></ol></div>
 <div id="readerEmpty" class="empty" hidden><p class="section-index">沒有符合的事件</p><h2>換個範圍，繼續找。</h2><p>可以減少年代或用語限制。完整剪報中仍可能有符合的資料。</p><button type="button" data-action="edit">調整篩選</button><button type="button" id="emptyReset">看全部 50 件</button></div>
 </section>
@@ -476,7 +475,7 @@ dialog { box-shadow: 0 12px 48px #0002; }
 <dialog id="directoryDialog" class="directory-dialog" aria-labelledby="directoryTitle"><form method="dialog"><button aria-label="關閉事件目錄">關閉 ×</button></form><p class="section-index">在目前範圍中查找</p><h2 id="directoryTitle">找一件事</h2><label class="search-field">年份、事件名稱或內文<input type="search" id="eventQuery" placeholder="例如：1990、家長、測驗" autocomplete="off"></label><p id="directoryCount" class="help" role="status"></p><ol id="directoryResults" class="directory-results"></ol><p id="directoryEmpty" hidden>目前範圍沒有符合的事件。可以換個字詞，或關閉目錄後調整範圍。</p></dialog>
 <dialog id="shareDialog" class="share-dialog" aria-labelledby="shareTitle"><form method="dialog"><button>關閉 ×</button></form><h2 id="shareTitle">保留這段閱讀位置</h2><p>連結會保留篩選條件、閱讀位置與已展開事件。</p><label class="search-field">閱讀連結<input type="url" id="shareUrl" readonly></label><button type="button" class="primary" id="copyShare">複製連結</button><p id="shareFeedback" role="status" class="help"></p><p id="localLinkNotice" class="help" hidden>目前是本機預覽網址，只能在這台電腦使用。網站發布後，才可把公開網址分享給別人。</p></dialog>
 <dialog id="imageDialog" class="image-dialog" aria-labelledby="imageTitle"><form method="dialog"><button aria-label="關閉圖片">關閉 ×</button></form><h2 id="imageTitle"></h2><div class="image-tools"><button type="button" id="imageZoom" aria-pressed="false">放大圖片</button></div><div class="image-canvas" id="imageCanvas"><img id="fullImage" alt=""></div><p id="imageCaption"></p></dialog>
-<dialog id="aboutDialog" class="about-dialog" aria-labelledby="aboutTitle"><form method="dialog"><button>關閉 ×</button></form><p class="section-index">資料與閱讀方式</p><h2 id="aboutTitle">關於這份年表</h2><p>這裡整理臺灣智能障礙相關歷史，提供一般讀者、學生、特教相關人員與智能障礙者本人查閱。</p><p>精選 50 件事件：18 件來自重大事件表，另有 15 件剪報、9 件研究及 8 件人數里程碑。事件不會因篩選而增加。</p><p>「最早」「首篇」等敘述以本站收錄資料為範圍。同年僅知年份的事件排在該年最後；時間相近不代表因果關係。</p><p>剪報共 738 篇，統計至 2022 年。新聞保留當年的用詞，包含歧視用語及社會案件；閱讀時請留意歷史語境。</p><p>易讀介紹仍為草稿，未經專業人員與自我倡議者審閱。照片、剪報圖與英文合成錄音明確標為示例，不能作為歷史事件的佐證。</p><p>閱讀進度與字級偏好儲存在此瀏覽器。此版本不會把閱讀紀錄傳送到伺服器。</p><p>計畫單位、引用格式與原件授權範圍仍待團隊補齊。</p></dialog>
+<dialog id="aboutDialog" class="about-dialog" aria-labelledby="aboutTitle"><form method="dialog"><button>關閉 ×</button></form><p class="section-index">資料與閱讀方式</p><h2 id="aboutTitle">關於這份年表</h2><p>這裡整理臺灣智能障礙相關歷史，提供一般讀者、學生、特教相關人員與智能障礙者本人查閱。</p><p>精選 50 件事件：18 件來自重大事件表，另有 15 件剪報、9 件研究及 8 件人數里程碑。事件不會因篩選而增加。</p><p>「最早」「首篇」等敘述以本站收錄資料為範圍。同年僅知年份的事件排在該年最後；時間相近不代表因果關係。</p><p>剪報共 738 篇，統計至 2022 年。新聞保留當年的用詞，包含歧視用語及社會案件；閱讀時請留意歷史語境。</p><p>易讀介紹仍為草稿，未經專業人員與自我倡議者審閱。照片、剪報圖與英文合成錄音明確標為示例，不能作為歷史事件的佐證。</p><p>閱讀進度與字級偏好儲存在此瀏覽器。此版本不會把閱讀紀錄傳送到伺服器。</p><p>計畫單位、引用格式與原件授權範圍仍待團隊補齊。</p><details class="about-examples"><summary>查看照片、剪報與錄音的介面示例</summary><div id="aboutSamples"></div></details></dialog>
 
 <script>
 /* ============ 資料 ============
@@ -865,6 +864,7 @@ const ReaderData = (() => {
   D.terms.forEach((t,i)=>addChoice(el('wordOptions'),'word-'+i,t,t,'terms'));
   D.decades.forEach(d=>addChoice(el('quickDecades'),'quick-decade-'+d,d+' 年代',d,'decades','quickFilter'));
   D.types.forEach(t=>addChoice(el('quickTypes'),'quick-type-'+t,TRACKS[t].name,t,'types','quickFilter'));
+  D.terms.forEach((term,index)=>addChoice(el('quickWords'),'quick-word-'+index,term,term,'terms','quickFilter'));
   function syncPicker(){
     const f=state.draft;all('[data-filter]',el('filterForm')).forEach(i=>i.checked=f[i.dataset.filter].includes(i.dataset.filter==='decades'?Number(i.value):i.value));
     el('wordField').hidden=!D.onlyNews(f);const matches=D.filterEvents(f), n=matches.length;el('filterPreview').textContent=n?('從 '+matches[0].y+' 年到 '+matches[n-1].y+' 年；第一件：'+D.title(matches[0])):'試著減少限制，或重設條件。';
@@ -874,7 +874,7 @@ const ReaderData = (() => {
     el('cancelFilters').hidden=!state.hasRead;
     el('selectionTitle').textContent=state.hasRead?'調整閱讀範圍':'選擇閱讀範圍';
   }
-  function edit(){capturePosition();state.draft=D.clone(state.applied);mode('select');}
+  function edit(){el('quickFilters').open=true;el('quickFilters').querySelector('summary').focus();}
   el('filterForm').addEventListener('change',()=>{
     const value={decades:[],types:[],terms:[]};all('[data-filter]:checked',el('filterForm')).forEach(i=>value[i.dataset.filter].push(i.value));
     state.draft=D.normalize(value);syncPicker();
@@ -891,10 +891,9 @@ const ReaderData = (() => {
   }
   el('filterForm').addEventListener('submit',e=>{e.preventDefault();if(state.draft.types.length)commit(state.draft);});
   el('readAll').addEventListener('click',()=>commit(D.defaults()));el('cancelFilters').addEventListener('click',()=>{state.draft=D.clone(state.applied);mode('read');});
-  el('editFilters').addEventListener('click',edit);
-  function mediaFor(event){return READER_MEDIA.items.filter(m=>m.events?.includes(event.id)||(m.allNews&&event.track==='news'));}
-  function mediaHtml(event){
-    const items=mediaFor(event);if(!items.length)return '';
+  function mediaFor(event){return READER_MEDIA.items.filter(m=>!m.sample&&(m.events?.includes(event.id)||(m.allNews&&event.track==='news')));}
+  function mediaHtml(event,{samples=false}={}){
+    const items=samples?READER_MEDIA.items.filter(item=>item.sample):mediaFor(event);if(!items.length)return '';
     const heading=[...new Set(items.map(m=>({photo:'照片',clip:'剪報',audio:'錄音'})[m.kind]))].join('、');
     return `<section class="media-section" aria-label="事件附件"><h3>事件附件</h3>${items.some(m=>m.sample)?'<p class="sample-notice">以下示例僅呈現附件樣式，與此事件沒有史料關聯。真實原件尚待提供。</p>':''}<div class="media-switch" role="group" aria-label="選擇附件">${items.map((m,i)=>`<button type="button" data-media-select="${esc(m.id)}" aria-pressed="${i===0}">${({photo:'照片',clip:'剪報',audio:'錄音'})[m.kind]}</button>`).join('')}</div>${items.map((m,i)=>{
       const key=event.id+'-'+m.id,badge=m.sample?'<span class="sample-badge">示意</span>':'';
@@ -916,7 +915,7 @@ const ReaderData = (() => {
     el('decadeNav').hidden=!list.length;
     renderDecades();bindAudio();applyPrefs();syncNav();syncQuickFilters();renderReaderSearch();
   }
-  function bindAudio(){all('audio',el('timeline')).forEach(audio=>{
+  function bindAudio(root=el('timeline')){all('audio',root).forEach(audio=>{
     audio.addEventListener('play',()=>all('audio').forEach(other=>{if(other!==audio)other.pause();}));
     audio.addEventListener('error',()=>{const p=audio.parentElement.querySelector('.audio-error');if(p)p.hidden=false;});
     audio.addEventListener('timeupdate',()=>{const rows=all('[data-audio]',audio.parentElement);rows.forEach((row,i)=>row.classList.toggle('current',audio.currentTime>=Number(row.dataset.start)&&(!rows[i+1]||audio.currentTime<Number(rows[i+1].dataset.start))));});
@@ -993,7 +992,7 @@ const ReaderData = (() => {
     const f=state.newsAll?D.defaults():state.applied,A=D.filterNews(f,state.query),scope={...D.clone(f),types:['news']};
     el('clearNewsScope').hidden=state.newsAll||(!f.decades.length&&!f.terms.length);el('newsConditions').textContent='目前範圍：'+D.summary(scope)+'。';
     el('newsCount').textContent=`符合 ${A.length} 篇，共 ${NEWS.length} 篇；目前列出 ${Math.min(state.limit,A.length)} 篇。`;
-    el('newsRows').innerHTML=A.slice(0,state.limit).map(n=>`<li><details><summary><span class="clip-meta">${esc(n.d)}　${esc(n.o)}</span><h3 class="clip-title">${esc(n.t)}</h3></summary><p class="clip-codes">用詞：${esc(n.w.join('、')||'未編')}<br>觀點：${esc(n.v||'未編')}${n.v2&&n.v2!=='無'?'；次要：'+esc(n.v2):''}<br>主題：${esc(n.p.join('、')||'未編')}${n.x?'<br>原資料標記：主體非智能障礙者':''}</p><figure class="clip-preview"><button type="button" class="image-button" data-image="sample-clip" aria-label="放大剪報版面示意"><img src="assets/sample-newspaper.png" alt="剪報版面示意，非這篇新聞的原件" width="640" height="480" loading="lazy"></button><figcaption class="media-caption">示意，非本篇原件。尚未提供掃描圖與內文，以上僅為實際編碼資料。</figcaption></figure></details></li>`).join('');
+    el('newsRows').innerHTML=A.slice(0,state.limit).map(n=>`<li><details><summary><span class="clip-meta">${esc(n.d)}　${esc(n.o)}</span><h3 class="clip-title">${esc(n.t)}</h3></summary><p class="clip-codes">用詞：${esc(n.w.join('、')||'未編')}<br>觀點：${esc(n.v||'未編')}${n.v2&&n.v2!=='無'?'；次要：'+esc(n.v2):''}<br>主題：${esc(n.p.join('、')||'未編')}${n.x?'<br>原資料標記：主體非智能障礙者':''}</p></details></li>`).join('');
     el('newsEmpty').hidden=!!A.length;el('moreNews').hidden=state.limit>=A.length;el('moreNews').textContent=`再看 ${Math.min(40,Math.max(0,A.length-state.limit))} 篇`;
   }
   el('navNews').addEventListener('click',e=>{e.preventDefault();library();});
@@ -1029,7 +1028,19 @@ const ReaderData = (() => {
   }
   function syncPosition({forceFollow=false}={}){
     const idx=Math.max(0,lastList.findIndex(e=>e.id===state.anchor)),event=lastList[idx];
-    el('positionLabel').textContent=event?`${event.dec} 年代 · 第 ${idx+1} 件 / ${lastList.length} 件`:'目前沒有精選事件';
+    const viewport = el('timelineViewport');
+    const viewportBounds = viewport.getBoundingClientRect();
+    const visible = all('#timeline>li').filter(item=>{
+      const rect = item.getBoundingClientRect();
+      if(state.view === 'list') return rect.bottom > 0 && rect.top < window.innerHeight;
+      const left = viewportBounds.left + viewport.clientLeft;
+      return rect.left >= left - 1 && rect.right <= left + viewport.clientWidth + 1;
+    });
+    const first = visible[0], last = visible[visible.length-1];
+    const start = first ? lastList.findIndex(item=>item.id===first.dataset.event)+1 : idx+1;
+    const end = last ? lastList.findIndex(item=>item.id===last.dataset.event)+1 : start;
+    const range = start === end ? String(start) : `${start}–${end}`;
+    el('positionLabel').textContent=event?`目前顯示第 ${range} 件，共 ${lastList.length} 件`:'目前沒有精選事件';
     all('#decadeNav button').forEach(b=>b.setAttribute('aria-current',String(Number(b.dataset.decade)===event?.dec)));
     const nav=el('decadeNav'),active=nav.querySelector('[aria-current="true"]');
     if(!active||!nav.clientWidth)return;
@@ -1083,6 +1094,7 @@ const ReaderData = (() => {
   }
   function syncQuickFilters(){
     const filters = state.applied;
+    el('quickWordField').hidden=!D.onlyNews(filters);
     all('[data-quick-filter]').forEach(input => {
       const key = input.dataset.quickFilter;
       input.checked = filters[key].includes(key === 'decades' ? Number(input.value) : input.value);
@@ -1144,6 +1156,7 @@ const ReaderData = (() => {
     const filters = D.clone(state.applied);
     filters.decades = all('[data-quick-filter="decades"]:checked').map(input=>Number(input.value));
     filters.types = all('[data-quick-filter="types"]:checked').map(input=>input.value);
+    filters.terms = all('[data-quick-filter="terms"]:checked').map(input=>input.value);
     commit(D.normalize(filters),{focus:false});
     say(`目前顯示 ${lastList.length} 件事件。`);
   });
@@ -1184,15 +1197,18 @@ const ReaderData = (() => {
   el('copyShare').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(el('shareUrl').value);el('shareFeedback').textContent='連結已複製。';}catch{el('shareUrl').focus();el('shareUrl').select();el('shareFeedback').textContent='已選取連結，請按 Ctrl+C 或使用裝置的複製功能。';}});
   el('clearNewsScope').addEventListener('click',()=>{state.newsAll=true;state.limit=40;renderNews();});
   el('imageZoom').addEventListener('click',()=>{const zoom=el('imageCanvas').classList.toggle('zoomed');el('imageZoom').textContent=zoom?'縮回完整圖片':'放大圖片';el('imageZoom').setAttribute('aria-pressed',String(zoom));});
-  el('timeline').addEventListener('click',e=>{
+  all('#timeline,#aboutSamples').forEach(root=>root.addEventListener('click',e=>{
     const b=e.target.closest('button');if(!b)return;
     if(b.dataset.mediaSelect){const section=b.closest('.media-section');pauseAudio(section);all('[data-media-panel]',section).forEach(p=>p.hidden=p.dataset.mediaPanel!==b.dataset.mediaSelect);all('[data-media-select]',section).forEach(t=>t.setAttribute('aria-pressed',String(t===b)));}
     if(b.dataset.shareEvent)share(b.dataset.shareEvent);
     if(b.dataset.closeEvent){const details=b.closest('.event-details');details.open=false;details.querySelector('summary').focus({preventScroll:true});}
-  });
+  }));
   window.addEventListener('scroll',()=>{if(state.mode==='read'&&state.view==='list'){capturePosition();syncPosition();queueSave();}},{passive:true});
   window.addEventListener('pagehide',()=>{if(state.hasRead){capturePosition();try{localStorage.setItem(progressKey,JSON.stringify(snapshot()));}catch{}}});
   window.addEventListener('popstate',restoreRoute);
+  el('aboutSamples').innerHTML=mediaHtml({id:'about'},{samples:true});
+  bindAudio(el('aboutSamples'));
+  all('dialog').forEach(dialog=>dialog.addEventListener('close',()=>pauseAudio(dialog)));
   syncPicker();applyPrefs();updateResume();restoreRoute();
 
 })();
