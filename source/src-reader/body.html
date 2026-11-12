@@ -4,7 +4,7 @@
     <h1><a class="brand" href="index.html">智能障礙歷史年表</a></h1>
     <p>臺灣 · 1962–2024</p>
   </div>
-  <nav aria-label="網站"><a href="#clippings" id="navNews">查閱剪報</a><button type="button" class="text-button" id="aboutButton">關於資料</button></nav>
+  <nav aria-label="網站"><button type="button" class="text-button" id="startTour">使用說明</button><button type="button" class="text-button" id="openAudioDemo">試聽錄音</button><a href="#clippings" id="navNews">查閱剪報</a><button type="button" class="text-button" id="aboutButton">關於資料</button></nav>
 </header>
 <main id="content" tabindex="-1">
 <section id="selection" aria-labelledby="selectionTitle">
@@ -60,6 +60,16 @@
 </section>
 <section id="newsLibrary" hidden aria-labelledby="newsTitle"><button type="button" id="backToTimeline">← 返回精選年表</button><header class="library-heading"><p class="section-index">資料查閱</p><h2 id="newsTitle" tabindex="-1">剪報資料庫</h2><p>738 篇剪報的日期、報別、整理標題與編碼。尚未提供原件全文。</p></header><div class="archive-controls"><div><p id="newsConditions" class="help"></p><button type="button" class="text-button" id="clearNewsScope">查閱全部年代與用語</button></div><label class="search-field">搜尋剪報<input type="search" id="newsQuery" placeholder="例如：家長陳情、報別或歷史用語" autocomplete="off"></label></div><p id="newsCount" role="status" aria-live="polite"></p><ol id="newsRows" class="news-rows"></ol><div id="newsEmpty" class="empty" hidden>沒有符合的剪報。請更換搜尋字詞，或調整年代與用語。</div><button type="button" id="moreNews">再看 40 篇</button></section>
 <p class="sr-only" id="readerStatus" role="status" aria-live="polite"></p></main>
+<dialog id="tourDialog" aria-labelledby="tourTitle" aria-describedby="tourText">
+  <div id="tourSpotlight" aria-hidden="true"></div>
+  <div id="tourCard">
+    <p id="tourCount" class="help"></p>
+    <h2 id="tourTitle" tabindex="-1"></h2>
+    <p id="tourText"></p>
+    <div class="tour-actions"><button type="button" id="tourPrevious">上一步</button><button type="button" class="primary" id="tourNext">下一步</button><button type="button" class="text-button" id="tourExit">結束說明</button></div>
+  </div>
+</dialog>
+<dialog id="audioDemoDialog" aria-labelledby="audioDemoTitle"><form method="dialog"><button aria-label="關閉試聽錄音">關閉 ×</button></form><h2 id="audioDemoTitle">試聽錄音</h2><p>這段英文合成語音可實際播放。可調整速度，或點逐字稿的時間跳到該段。</p><div id="audioDemoContent"></div></dialog>
 <dialog id="preferencesDialog" aria-labelledby="preferencesTitle">
   <h2 id="preferencesTitle">閱讀設定</h2>
   <form method="dialog" class="preferences-form">

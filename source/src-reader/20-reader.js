@@ -78,13 +78,16 @@
   el('filterForm').addEventListener('submit',e=>{e.preventDefault();if(state.draft.types.length)commit(state.draft);});
   el('readAll').addEventListener('click',()=>commit(D.defaults()));el('cancelFilters').addEventListener('click',()=>{state.draft=D.clone(state.applied);mode('read');});
   function mediaFor(event){return READER_MEDIA.items.filter(m=>!m.sample&&(m.events?.includes(event.id)||(m.allNews&&event.track==='news')));}
-  function mediaHtml(event,{samples=false}={}){
-    const items=samples?READER_MEDIA.items.filter(item=>item.sample):mediaFor(event);if(!items.length)return '';
-    const heading=[...new Set(items.map(m=>({photo:'照片',clip:'剪報',audio:'錄音'})[m.kind]))].join('、');
-    return `<section class="media-section" aria-label="事件附件"><h3>事件附件</h3>${items.some(m=>m.sample)?'<p class="sample-notice">以下示例僅呈現附件樣式，與此事件沒有史料關聯。真實原件尚待提供。</p>':''}<div class="media-switch" role="group" aria-label="選擇附件">${items.map((m,i)=>`<button type="button" data-media-select="${esc(m.id)}" aria-pressed="${i===0}">${({photo:'照片',clip:'剪報',audio:'錄音'})[m.kind]}</button>`).join('')}</div>${items.map((m,i)=>{
+  function mediaHtml(event,{samples=false,kind=null}={}){
+    const items=(samples?READER_MEDIA.items.filter(item=>item.sample):mediaFor(event)).filter(item=>!kind||item.kind===kind);if(!items.length)return '';
+    const title = kind ? '' : '<h3>事件附件</h3>';
+    const notice = !kind && items.some(item=>item.sample) ? '<p class="sample-notice">以下示例僅呈現附件樣式，與歷史事件沒有史料關聯。</p>' : '';
+    const selector = items.length > 1 ? `<div class="media-switch" role="group" aria-label="選擇附件">${items.map((item,index)=>`<button type="button" data-media-select="${esc(item.id)}" aria-pressed="${index===0}">${({photo:'照片',clip:'剪報',audio:'錄音'})[item.kind]}</button>`).join('')}</div>` : '';
+    const headingTag = kind ? 'h3' : 'h4';
+    return `<section class="media-section" aria-label="${kind?'錄音示例':'事件附件'}">${title}${notice}${selector}${items.map((m,i)=>{
       const key=event.id+'-'+m.id,badge=m.sample?'<span class="sample-badge">示意</span>':'';
-      if(m.kind==='audio')return `<section class="media-item" data-kind="audio" data-media-panel="${esc(m.id)}"${i?' hidden':''}><h4>${esc(m.title)}${badge}</h4><audio id="audio-${key}" class="audio-player" controls preload="none" src="${esc(m.src)}" aria-label="${esc(m.title+(m.sample?'，合成語音示例':''))}"></audio><p class="audio-error" hidden>音檔目前無法載入；仍可閱讀下方逐字稿。</p><label class="audio-speed">播放速度<select data-audio-speed="audio-${key}"><option value="0.75">0.75 倍</option><option value="1" selected>1 倍</option><option value="1.25">1.25 倍</option><option value="1.5">1.5 倍</option></select></label><p class="media-caption">${esc(m.caption||'')}</p><details class="transcript more"><summary>閱讀逐字稿與中文對照</summary><ol>${(m.segments||[]).map((s,i)=>`<li data-audio="audio-${key}" data-segment="${i}" data-start="${s.time}"><button type="button" data-seek="${s.time}" data-player="audio-${key}">${Math.floor(s.time/60)}:${String(Math.floor(s.time%60)).padStart(2,'0')} 跳至此段</button><p>${esc(s.text)}</p>${s.translation?`<p class="translation">${esc(s.translation)}</p>`:''}</li>`).join('')}</ol></details></section>`;
-      return `<figure class="media-item" data-kind="${esc(m.kind)}" data-media-panel="${esc(m.id)}"${i?' hidden':''}><h4>${esc(m.title)}${badge}</h4><button class="image-button" type="button" data-image="${esc(m.id)}" aria-label="放大${esc(m.title)}"><img src="${esc(m.src)}" alt="${esc(m.alt||m.title)}" loading="lazy" width="${m.kind==='photo'?600:640}" height="${m.kind==='photo'?400:480}"></button><figcaption class="media-caption">${esc(m.caption||'')}</figcaption>${m.kind==='clip'?`<details class="more"><summary>閱讀剪報文字說明</summary><p>${esc(m.text||'原件文字待補。')}</p></details>`:''}</figure>`;
+      if(m.kind==='audio')return `<section class="media-item" data-kind="audio" data-media-panel="${esc(m.id)}"${i?' hidden':''}><${headingTag}>${esc(m.title)}${badge}</${headingTag}><audio id="audio-${key}" class="audio-player" controls preload="none" src="${esc(m.src)}" aria-label="${esc(m.title+(m.sample?'，合成語音示例':''))}"></audio><p class="audio-error" hidden>音檔目前無法載入；仍可閱讀下方逐字稿。</p><label class="audio-speed">播放速度<select data-audio-speed="audio-${key}"><option value="0.75">0.75 倍</option><option value="1" selected>1 倍</option><option value="1.25">1.25 倍</option><option value="1.5">1.5 倍</option></select></label><p class="media-caption">${esc(m.caption||'')}</p><details class="transcript more"><summary>閱讀逐字稿與中文對照</summary><ol>${(m.segments||[]).map((s,i)=>`<li data-audio="audio-${key}" data-segment="${i}" data-start="${s.time}"><button type="button" data-seek="${s.time}" data-player="audio-${key}">${Math.floor(s.time/60)}:${String(Math.floor(s.time%60)).padStart(2,'0')} 跳至此段</button><p>${esc(s.text)}</p>${s.translation?`<p class="translation">${esc(s.translation)}</p>`:''}</li>`).join('')}</ol></details></section>`;
+      return `<figure class="media-item" data-kind="${esc(m.kind)}" data-media-panel="${esc(m.id)}"${i?' hidden':''}><${headingTag}>${esc(m.title)}${badge}</${headingTag}><button class="image-button" type="button" data-image="${esc(m.id)}" aria-label="放大${esc(m.title)}"><img src="${esc(m.src)}" alt="${esc(m.alt||m.title)}" loading="lazy" width="${m.kind==='photo'?600:640}" height="${m.kind==='photo'?400:480}"></button><figcaption class="media-caption">${esc(m.caption||'')}</figcaption>${m.kind==='clip'?`<details class="more"><summary>閱讀剪報文字說明</summary><p>${esc(m.text||'原件文字待補。')}</p></details>`:''}</figure>`;
     }).join('')}</section>`;
   }
   function eventHtml(e){
@@ -400,19 +403,96 @@
   el('resumeReading').addEventListener('click',()=>{let saved;try{saved=JSON.parse(localStorage.getItem(progressKey));}catch{}if(saved)restore(saved);});
   el('shareReading').addEventListener('click',()=>share());
   el('copyShare').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(el('shareUrl').value);el('shareFeedback').textContent='連結已複製。';}catch{el('shareUrl').focus();el('shareUrl').select();el('shareFeedback').textContent='已選取連結，請按 Ctrl+C 或使用裝置的複製功能。';}});
+  const tour = el('tourDialog');
+  let tourSteps = [], tourIndex = 0, tourScroll = 0;
+  function placeTour(){
+    if(!tour.open) return;
+    const target = tourSteps[tourIndex].target;
+    const bounds = target.getBoundingClientRect();
+    const left = Math.max(4,bounds.left-5), top = Math.max(4,bounds.top-5);
+    const right = Math.min(window.innerWidth-4,bounds.right+5);
+    const bottom = Math.min(window.innerHeight-4,bounds.bottom+5);
+    const spotlight = el('tourSpotlight');
+    Object.assign(spotlight.style,{left:left+'px',top:top+'px',width:Math.max(0,right-left)+'px',height:Math.max(0,bottom-top)+'px'});
+    const card = el('tourCard'), height = card.offsetHeight;
+    const below = bottom+12;
+    const cardTop = below+height <= window.innerHeight-12 ? below :
+      top-height-12 >= 12 ? top-height-12 : Math.max(12,window.innerHeight-height-12);
+    Object.assign(card.style,{left:Math.max(12,Math.min(left,window.innerWidth-card.offsetWidth-12))+'px',top:cardTop+'px'});
+  }
+  function showTourStep(){
+    const step = tourSteps[tourIndex];
+    step.target.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'});
+    el('tourCount').textContent=`第 ${tourIndex+1} 步，共 ${tourSteps.length} 步`;
+    el('tourTitle').textContent=step.title;
+    el('tourText').textContent=step.text;
+    el('tourPrevious').disabled=tourIndex===0;
+    el('tourNext').textContent=tourIndex===tourSteps.length-1?'完成說明':'下一步';
+    el('tourTitle').focus({preventScroll:true});
+    placeTour();
+  }
+  el('startTour').addEventListener('click',()=>{
+    const sharedSteps = [
+      {target:el('openAudioDemo'),title:'實際試聽錄音',text:'結束說明後，按「試聽錄音」可播放合成語音、調整速度，並點逐字稿時間跳到該段。'}
+    ];
+    if(state.mode==='read'){
+      const viewport = el('timelineViewport').getBoundingClientRect();
+      const firstVisible = all('#timeline>li').find(item=>{
+        const bounds=item.getBoundingClientRect();
+        return state.view==='list' ? bounds.bottom>0 : bounds.right>viewport.left+1;
+      });
+      tourSteps=[
+        {target:el('readerSearchForm'),title:'直接找事件',text:'輸入年份、事件名稱或內文。結果按年代分組，點選後會移到並展開事件。'},
+        {target:el('quickFilters').querySelector('summary'),title:'原地調整閱讀範圍',text:'展開「年代與類別」後，可複選年代和類型。條件會立即套用，也能直接清除已選條件。'},
+        {target:el('decadeNav'),title:'跳到另一個年代',text:'點選年代即可定位到該年代的第一件事件。下方會顯示目前可見的事件範圍。'},
+        {target:firstVisible?.querySelector('.event-details>summary'),title:'點加號開始閱讀',text:'點年份、標題或加號可展開介紹，也能同時展開多件事件。畫面中只要有事件展開，滑鼠滾輪就用來上下閱讀。'},
+        {target:el('later').parentElement,title:'切換上一組、下一組',text:'閱讀中可按這兩個按鈕切換事件。畫面中的事件全部收起後，也能用滑鼠滾輪左右翻閱；連續滾動一次翻一組。'}
+      ];
+    }else if(state.mode==='news'){
+      tourSteps=[
+        {target:el('newsQuery'),title:'搜尋剪報',text:'可搜尋整理標題、報別或歷史用語。結果會立即更新，也會顯示符合的篇數。'},
+        {target:el('backToTimeline'),title:'回到年表',text:'按這裡返回原本閱讀的年表範圍。'}
+      ];
+    }else{
+      tourSteps=[
+        {target:el('readAll'),title:'直接開始閱讀',text:'按「閱讀全部事件」可開啟全部 50 件精選事件。進入年表後，仍可隨時搜尋或篩選。'},
+        {target:el('decadeOptions'),title:'選擇年代',text:'可複選想讀的年代；不勾選代表全部年代。'},
+        {target:el('typeOptions'),title:'選擇事件類型',text:'可依類型挑選事件，顏色和文字會一起標示類別。選好後按「開始閱讀」。'}
+      ];
+    }
+    tourSteps=[...tourSteps,...sharedSteps].filter(step=>step.target?.getClientRects().length);
+    tourIndex=0;tourScroll=window.scrollY;
+    tour.showModal();
+    showTourStep();
+  });
+  el('tourNext').addEventListener('click',()=>{
+    if(tourIndex===tourSteps.length-1) tour.close();
+    else {tourIndex++;showTourStep();}
+  });
+  el('tourPrevious').addEventListener('click',()=>{tourIndex--;showTourStep();});
+  el('tourExit').addEventListener('click',()=>tour.close());
+  tour.addEventListener('close',()=>{
+    window.scrollTo({top:tourScroll,behavior:'instant'});
+    el('startTour').focus({preventScroll:true});
+  });
+  window.addEventListener('resize',placeTour);
+  window.addEventListener('scroll',placeTour,{passive:true});
   el('clearNewsScope').addEventListener('click',()=>{state.newsAll=true;state.limit=40;renderNews();});
   el('imageZoom').addEventListener('click',()=>{const zoom=el('imageCanvas').classList.toggle('zoomed');el('imageZoom').textContent=zoom?'縮回完整圖片':'放大圖片';el('imageZoom').setAttribute('aria-pressed',String(zoom));});
-  all('#timeline,#aboutSamples').forEach(root=>root.addEventListener('click',e=>{
+  all('#timeline,#aboutSamples,#audioDemoContent').forEach(root=>root.addEventListener('click',e=>{
     const b=e.target.closest('button');if(!b)return;
     if(b.dataset.mediaSelect){const section=b.closest('.media-section');pauseAudio(section);all('[data-media-panel]',section).forEach(p=>p.hidden=p.dataset.mediaPanel!==b.dataset.mediaSelect);all('[data-media-select]',section).forEach(t=>t.setAttribute('aria-pressed',String(t===b)));}
     if(b.dataset.shareEvent)share(b.dataset.shareEvent);
     if(b.dataset.closeEvent){const details=b.closest('.event-details');details.open=false;details.querySelector('summary').focus({preventScroll:true});}
   }));
-  window.addEventListener('scroll',()=>{if(state.mode==='read'&&state.view==='list'){capturePosition();syncPosition();queueSave();}},{passive:true});
+  window.addEventListener('scroll',()=>{if(!tour.open&&state.mode==='read'&&state.view==='list'){capturePosition();syncPosition();queueSave();}},{passive:true});
   window.addEventListener('pagehide',()=>{if(state.hasRead){capturePosition();try{localStorage.setItem(progressKey,JSON.stringify(snapshot()));}catch{}}});
   window.addEventListener('popstate',restoreRoute);
   el('aboutSamples').innerHTML=mediaHtml({id:'about'},{samples:true});
   bindAudio(el('aboutSamples'));
+  el('audioDemoContent').innerHTML=mediaHtml({id:'demo'},{samples:true,kind:'audio'});
+  bindAudio(el('audioDemoContent'));
+  el('openAudioDemo').addEventListener('click',()=>el('audioDemoDialog').showModal());
   all('dialog').forEach(dialog=>dialog.addEventListener('close',()=>pauseAudio(dialog)));
   syncPicker();applyPrefs();updateResume();restoreRoute();
 

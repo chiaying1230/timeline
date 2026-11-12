@@ -384,3 +384,47 @@ dialog { box-shadow: 0 12px 48px #0002; }
   .primary:hover { background: #f0f0ec; border-color: #f0f0ec; }
 }
 @media print { .reader-find, .active-filters, .reader-search-panel { display: none; } }
+
+.site-header nav { flex-wrap: wrap; gap: .35rem 1.25rem; }
+#audioDemoDialog { width: min(40rem, 94vw); }
+#audioDemoDialog > p { margin-bottom: 1rem; }
+#tourDialog {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: hidden;
+  animation: none;
+}
+#tourDialog::backdrop { background: transparent; animation: none; }
+#tourSpotlight {
+  position: fixed;
+  border: 2px solid white;
+  border-radius: 3px;
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / .68);
+  pointer-events: none;
+}
+#tourCard {
+  position: fixed;
+  z-index: 1;
+  width: min(25rem, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  padding: 1.25rem;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--control-edge);
+  box-shadow: 0 8px 28px #0003;
+}
+#tourCard h2 { margin-bottom: .6rem; font: 600 1.2rem/1.5 var(--sans); }
+#tourCount { margin: 0 0 .5rem; }
+#tourText { font-size: .95rem; line-height: 1.85; }
+.tour-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+@media print { #startTour, #openAudioDemo { display: none; } }
