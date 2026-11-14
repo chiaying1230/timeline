@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="zh-Hant-TW"><head><meta charset="utf-8">
+<html lang="zh-Hant-TW" class="sheet-loading"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="50 件智能障礙歷史精選事件，結合 738 篇剪報、研究與人數資料。選擇範圍後沿時間閱讀。">
+<meta name="description" content="智能障礙歷史精選事件，結合 738 篇剪報、研究與人數資料。選擇範圍後沿時間閱讀。">
 <title>智能障礙歷史年表</title>
 <link rel="icon" href="icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -449,8 +449,22 @@ dialog { box-shadow: 0 12px 48px #0002; }
 #tourText { font-size: .95rem; line-height: 1.85; }
 .tour-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
 @media print { #startTour { display: none; } }
+
+/* Sheet-managed attachments */
+.image-button img.natural{aspect-ratio:auto;height:auto;min-height:120px;max-height:80vh;object-fit:contain;background:var(--subtle)}
+.media-frame{position:relative;width:100%;aspect-ratio:16/9;background:var(--subtle)}
+.media-frame[data-frame="audio"]{aspect-ratio:auto;height:120px}
+.media-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.video-player{display:block;width:100%;max-height:70vh;background:#000}
+.media-text-body{font-size:.95rem;border-left:3px solid var(--line);padding-left:16px}
+.media-text-body p{margin:0 0 .8em}
+.media-item figcaption{margin:0}
+.media-credit{margin-top:4px}
+.transcript-time{display:inline-block;font-size:.8rem;color:var(--muted);margin-bottom:4px;font-variant-numeric:tabular-nums}
+html.sheet-loading main{visibility:hidden}
+html.sheet-loading body::after{content:"讀取資料中…";position:fixed;inset:40% 0 auto;text-align:center;color:var(--muted)}
 </style></head><body>
-<noscript><p>請開啟 JavaScript 以使用篩選與年表。原始資料與整理方式也可在本網站的 README 閱讀。</p></noscript>
+<noscript><style>html.sheet-loading main{visibility:visible}html.sheet-loading body::after{content:none}</style><p>請開啟 JavaScript 以使用篩選與年表。原始資料與整理方式也可在本網站的 README 閱讀。</p></noscript>
 <a class="skip" href="#content">跳到主要內容</a>
 <header class="site-header">
   <div class="masthead">
@@ -463,7 +477,7 @@ dialog { box-shadow: 0 12px 48px #0002; }
 <section id="selection" aria-labelledby="selectionTitle">
 <div class="selection-intro">
   <h2>從 1962 年讀起</h2>
-  <p>沿著 50 件事件，閱讀臺灣智能障礙相關的新聞、研究與法規。</p>
+  <p>沿著 <span data-event-count>50</span> 件事件，閱讀臺灣智能障礙相關的新聞、研究與法規。</p>
   <button type="button" class="primary" id="readAll">閱讀全部事件</button>
   <button type="button" id="resumeReading" hidden>繼續上次閱讀</button>
   <p id="resumeLabel" class="help" hidden></p>
@@ -528,7 +542,7 @@ dialog { box-shadow: 0 12px 48px #0002; }
 <dialog id="directoryDialog" class="directory-dialog" aria-labelledby="directoryTitle"><form method="dialog"><button aria-label="關閉事件目錄">關閉 ×</button></form><p class="section-index">在目前範圍中查找</p><h2 id="directoryTitle">找一件事</h2><label class="search-field">年份、事件名稱或內文<input type="search" id="eventQuery" placeholder="例如：1990、家長、測驗" autocomplete="off"></label><p id="directoryCount" class="help" role="status"></p><ol id="directoryResults" class="directory-results"></ol><p id="directoryEmpty" hidden>目前範圍沒有符合的事件。可以換個字詞，或關閉目錄後調整範圍。</p></dialog>
 <dialog id="shareDialog" class="share-dialog" aria-labelledby="shareTitle"><form method="dialog"><button>關閉 ×</button></form><h2 id="shareTitle">保留這段閱讀位置</h2><p>連結會保留篩選條件、閱讀位置與已展開事件。</p><label class="search-field">閱讀連結<input type="url" id="shareUrl" readonly></label><button type="button" class="primary" id="copyShare">複製連結</button><p id="shareFeedback" role="status" class="help"></p><p id="localLinkNotice" class="help" hidden>目前是本機預覽網址，只能在這台電腦使用。網站發布後，才可把公開網址分享給別人。</p></dialog>
 <dialog id="imageDialog" class="image-dialog" aria-labelledby="imageTitle"><form method="dialog"><button aria-label="關閉圖片">關閉 ×</button></form><h2 id="imageTitle"></h2><div class="image-tools"><button type="button" id="imageZoom" aria-pressed="false">放大圖片</button></div><div class="image-canvas" id="imageCanvas"><img id="fullImage" alt=""></div><p id="imageCaption"></p></dialog>
-<dialog id="aboutDialog" class="about-dialog" aria-labelledby="aboutTitle"><form method="dialog"><button>關閉 ×</button></form><p class="section-index">資料與閱讀方式</p><h2 id="aboutTitle">關於這份年表</h2><p>這裡整理臺灣智能障礙相關歷史，提供一般讀者、學生、特教相關人員與智能障礙者本人查閱。</p><p>精選 50 件事件：18 件來自重大事件表，另有 15 件剪報、9 件研究及 8 件人數里程碑。事件不會因篩選而增加。</p><p>「最早」「首篇」等敘述以本站收錄資料為範圍。同年僅知年份的事件排在該年最後；時間相近不代表因果關係。</p><p>剪報共 738 篇，統計至 2022 年。新聞保留當年的用詞，包含歧視用語及社會案件；閱讀時請留意歷史語境。</p><p>易讀介紹仍為草稿，未經專業人員與自我倡議者審閱。照片、剪報圖與英文合成錄音明確標為示例，不能作為歷史事件的佐證。</p><p>閱讀進度與字級偏好儲存在此瀏覽器。此版本不會把閱讀紀錄傳送到伺服器。</p><p>計畫單位、引用格式與原件授權範圍仍待團隊補齊。</p><details class="about-examples"><summary>查看照片、剪報與錄音的介面示例</summary><div id="aboutSamples"></div></details></dialog>
+<dialog id="aboutDialog" class="about-dialog" aria-labelledby="aboutTitle"><form method="dialog"><button>關閉 ×</button></form><p class="section-index">資料與閱讀方式</p><h2 id="aboutTitle">關於這份年表</h2><p>這裡整理臺灣智能障礙相關歷史，提供一般讀者、學生、特教相關人員與智能障礙者本人查閱。</p><p id="aboutCounts"></p><p>「最早」「首篇」等敘述以本站收錄資料為範圍。同年僅知年份的事件排在該年最後；時間相近不代表因果關係。</p><p>剪報共 738 篇，統計至 2022 年。新聞保留當年的用詞，包含歧視用語及社會案件；閱讀時請留意歷史語境。</p><p>易讀介紹仍為草稿，未經專業人員與自我倡議者審閱。照片、剪報圖與英文合成錄音明確標為示例，不能作為歷史事件的佐證。</p><p>閱讀進度與字級偏好儲存在此瀏覽器。此版本不會把閱讀紀錄傳送到伺服器。</p><p>事件與附件內容由團隊維護的 Google 試算表載入；圖片、錄音與影片可能存放在 Google 雲端硬碟或 YouTube，開啟時會連線到這些服務。</p><p>計畫單位、引用格式與原件授權範圍仍待團隊補齊。</p><details class="about-examples"><summary>查看照片、剪報與錄音的介面示例</summary><div id="aboutSamples"></div></details></dialog>
 
 <script>
 /* ============ 資料 ============
@@ -631,10 +645,211 @@ const TITLE_LINES={
 };
 
 const PHOTOS = [], INTERVIEWS = [];
-/* ============ 時間軸版本比較：共用的工具與 50 件事件 ============
-   事件 = 重大事件表的 18 件（src/00-data.js 的 TREE）＋ pick_events.py 從剪報、研究、學生人數挑出的事件（events.json）。
-   照片與訪談沿用 src/60-media.js 的清單：清單是空的時候是版面示意，放入真實資料後就會換成真的。 */
-const PICK = [{"id": "n0", "type": "news", "track": "news", "date": "1962-01-15", "precision": "day", "certainty": "sure", "title": "幼獅社", "importance": 2, "why": "資料裡最早的一篇剪報", "summary": "中央日報 1962.01.15 的報導。用詞：白痴／低能；主要觀點：期待正常化/健全主義。", "source": "中央日報，1962-01-15", "news": 0}, {"id": "n2", "type": "news", "track": "news", "date": "1964-07-15", "precision": "day", "certainty": "sure", "title": "設班 教育局告家長書", "importance": 2, "why": "「智能不足」這個詞第一次出現在剪報裡", "summary": "中央日報 1964.07.15 的報導。用詞：智能不足；主要觀點：無。", "source": "中央日報，1964-07-15", "news": 2}, {"id": "n18", "type": "news", "track": "news", "date": "1967-09-25", "precision": "day", "certainty": "sure", "title": "特教法草案", "importance": 1, "why": "分類為「政策公告及回應—立法」", "summary": "中央日報 1967.09.25 的報導。用詞：白痴／低能、智能不足；主要觀點：倡議。", "source": "中央日報，1967-09-25", "news": 18}, {"id": "r0", "type": "lit", "track": "lit", "date": "1971", "precision": "year", "certainty": "sure", "title": "第一篇研究", "importance": 2, "why": "資料裡最早的研究", "summary": "426 篇研究文獻裡，最早的一篇發表於 1971 年，研究設計是量化研究。", "source": "研究文獻編碼表"}, {"id": "n23", "type": "news", "track": "news", "date": "1971-09-21", "precision": "day", "certainty": "sure", "title": "教局呼籲就學 增班", "importance": 1, "why": "主要觀點「家長拒絕標籤」第一次出現", "summary": "聯合報 1971.09.21 的報導。用詞：智能不足；主要觀點：家長拒絕標籤。", "source": "聯合報，1971-09-21", "news": 23}, {"id": "n26", "type": "news", "track": "news", "date": "1973-06-09", "precision": "day", "certainty": "sure", "title": "展現學生作品", "importance": 1, "why": "主要觀點「肯定障礙者」第一次出現", "summary": "聯合報 1973.06.09 的報導。用詞：智能不足；主要觀點：肯定障礙者(學習能力、成就)。", "source": "聯合報，1973-06-09", "news": 26}, {"id": "n37", "type": "news", "track": "news", "date": "1978-10-02", "precision": "day", "certainty": "sure", "title": "佳音韻療育中心", "importance": 2, "why": "「智能障礙」這個詞第一次出現在剪報裡", "summary": "中央日報 1978.10.02 的報導。用詞：智能障礙；主要觀點：家人/專業人員犧牲奉獻。", "source": "中央日報，1978-10-02", "news": 37}, {"id": "rd4", "type": "lit", "track": "lit", "date": "1982", "precision": "year", "certainty": "sure", "title": "第一篇混合研究", "importance": 1, "why": "研究設計「混合研究」第一次出現", "summary": "1982 年出現第一篇混合研究。整份資料共有 17 篇混合研究。", "source": "研究文獻編碼表"}, {"id": "rd2", "type": "lit", "track": "lit", "date": "1985", "precision": "year", "certainty": "sure", "title": "第一篇質性研究", "importance": 1, "why": "研究設計「質性研究」第一次出現", "summary": "1985 年出現第一篇質性研究。整份資料共有 63 篇質性研究。", "source": "研究文獻編碼表"}, {"id": "n60", "type": "news", "track": "news", "date": "1985-02-13", "precision": "day", "certainty": "sure", "title": "家長陳情", "importance": 1, "why": "家長陳情第一次出現在剪報裡", "summary": "聯合報 1985.02.13 的報導。用詞：智能不足；主要觀點：倡議。", "source": "聯合報，1985-02-13", "news": 60}, {"id": "rt5", "type": "lit", "track": "lit", "date": "1986", "precision": "year", "certainty": "sure", "title": "第一篇權利意識研究", "importance": 2, "why": "研究主題「權利意識」第一次出現", "summary": "1986 年出現第一篇以權利意識（包含性與自我倡議）為主題的研究。", "source": "研究文獻編碼表"}, {"id": "n87", "type": "news", "track": "news", "date": "1988-04-02", "precision": "day", "certainty": "sure", "title": "歧視", "importance": 2, "why": "「智障」這個詞第一次出現在剪報裡", "summary": "中國時報 1988.04.02 的報導。用詞：智能不足、智障、其他用詞；主要觀點：家長拒絕標籤。", "source": "中國時報，1988-04-02", "news": 87}, {"id": "n118", "type": "news", "track": "news", "date": "1991-10-13", "precision": "day", "certainty": "sure", "title": "優生保健法", "importance": 1, "why": "分類為「政策公告及回應—立法」", "summary": "中國時報 1991.10.13 的報導。用詞：智障；主要觀點：優生保健。", "source": "中國時報，1991-10-13", "news": 118}, {"id": "pm0", "type": "people", "track": "people", "date": "1999", "precision": "year", "certainty": "sure", "title": "衛福部統計起點", "importance": 1, "why": "衛福部數據的第一年", "summary": "1999 年底，全台領有身心障礙證明的智能障礙者 68,044 人。", "source": "衛福部全台數據"}, {"id": "n319", "type": "news", "track": "news", "date": "1999-07-07", "precision": "day", "certainty": "sure", "title": "裝傻免役爭議 倡議修兵役法", "importance": 1, "why": "分類為「政策公告及回應—修法」", "summary": "中國時報 1999.07.07 的報導。用詞：智能不足；主要觀點：家長拒絕標籤。", "source": "中國時報，1999-07-07", "news": 319}, {"id": "n348", "type": "news", "track": "news", "date": "2001-04-05", "precision": "day", "certainty": "sure", "title": "法扶 公設辯護人（智能障礙者也會受惠）", "importance": 1, "why": "分類為「政策公告及回應—立法」", "summary": "聯合報 2001.04.05 的報導。用詞：智能障礙；主要觀點：無。", "source": "聯合報，2001-04-05", "news": 348}, {"id": "rd3", "type": "lit", "track": "lit", "date": "2002", "precision": "year", "certainty": "sure", "title": "第一篇行動研究", "importance": 1, "why": "研究設計「行動研究」第一次出現", "summary": "2002 年出現第一篇行動研究。整份資料共有 18 篇行動研究。", "source": "研究文獻編碼表"}, {"id": "rr3", "type": "lit", "track": "lit", "date": "2003", "precision": "year", "certainty": "sure", "title": "第一篇性教育介入研究", "importance": 1, "why": "權利議題「性教育介入」第一次出現", "summary": "2003 年出現第一篇性教育介入的研究。", "source": "研究文獻編碼表"}, {"id": "rd5", "type": "lit", "track": "lit", "date": "2005", "precision": "year", "certainty": "sure", "title": "第一篇文獻回顧", "importance": 1, "why": "研究設計「文獻回顧」第一次出現", "summary": "2005 年出現第一篇文獻回顧。整份資料共有 10 篇文獻回顧。", "source": "研究文獻編碼表"}, {"id": "rr2", "type": "lit", "track": "lit", "date": "2005", "precision": "year", "certainty": "sure", "title": "第一篇自我倡議研究", "importance": 1, "why": "權利議題「自我倡議/自我決策」第一次出現", "summary": "2005 年出現第一篇談自我倡議或自我決策的研究。", "source": "研究文獻編碼表"}, {"id": "rpk", "type": "lit", "track": "lit", "date": "2006", "precision": "year", "certainty": "sure", "title": "研究篇數最多的一年", "importance": 2, "why": "每年篇數的高峰", "summary": "2006 年有 28 篇研究，是整份資料裡最多的一年。", "source": "研究文獻編碼表"}, {"id": "pn0", "type": "people", "track": "people", "date": "2008", "precision": "year", "certainty": "sure", "title": "通報網學生人數起點", "importance": 1, "why": "通報網數據的第一年", "summary": "2008 年，全台特教通報網的智能障礙學生 24,945 人。", "source": "通報網全台數據"}, {"id": "n524", "type": "news", "track": "news", "date": "2009-05-03", "precision": "day", "certainty": "sure", "title": "禁治產修法", "importance": 1, "why": "分類為「政策公告及回應—修法」", "summary": "聯合晚報 2009.05.03 的報導。用詞：智能不足；主要觀點：倡議。", "source": "聯合晚報，2009-05-03", "news": 524}, {"id": "n537", "type": "news", "track": "news", "date": "2009-12-11", "precision": "day", "certainty": "sure", "title": "健保給付牙科治療", "importance": 1, "why": "分類為「政策公告及回應—修法」", "summary": "聯合報 2009.12.11 的報導。用詞：智能障礙；主要觀點：無。", "source": "聯合報，2009-12-11", "news": 537}, {"id": "pnk", "type": "people", "track": "people", "date": "2010", "precision": "year", "certainty": "sure", "title": "智能障礙學生人數最多", "importance": 2, "why": "智能障礙學生人數的高峰", "summary": "2010 年 26,059 人，之後逐年減少。", "source": "通報網全台數據"}, {"id": "n573", "type": "news", "track": "news", "date": "2011-08-29", "precision": "day", "certainty": "sure", "title": "資源班飽和拒收輕度智障", "importance": 1, "why": "2010 年代第一篇招生、安置的報導", "summary": "中國時報 2011.08.29 的報導。用詞：智障、智能障礙；主要觀點：無。", "source": "中國時報，2011-08-29", "news": 573}, {"id": "pxl", "type": "people", "track": "people", "date": "2013", "precision": "year", "certainty": "sure", "title": "學習障礙學生人數超過智能障礙", "importance": 2, "why": "學習障礙與智能障礙的人數交叉", "summary": "2013 年起，學習障礙學生（26,797 人）多於智能障礙學生（25,088 人）。", "source": "通報網全台數據"}, {"id": "pm1", "type": "people", "track": "people", "date": "2014", "precision": "year", "certainty": "sure", "title": "智能障礙總人數破十萬", "importance": 2, "why": "衛福部數據第一次超過十萬人", "summary": "2014 年底 100,588 人，第一次超過十萬人。到 2024 年底是 102,556 人。", "source": "衛福部全台數據"}, {"id": "pxa", "type": "people", "track": "people", "date": "2022", "precision": "year", "certainty": "sure", "title": "自閉症學生人數超過智能障礙", "importance": 2, "why": "自閉症與智能障礙的人數交叉", "summary": "2022 年起，自閉症學生（18,853 人）多於智能障礙學生（17,608 人）。", "source": "通報網全台數據"}, {"id": "n737", "type": "news", "track": "news", "date": "2022-08-12", "precision": "day", "certainty": "sure", "title": "智障母誤棄嬰", "importance": 1, "why": "資料裡最晚的一篇剪報", "summary": "聯合報 2022.08.12 的報導。用詞：智能障礙；主要觀點：沈重負擔/同情憐憫。", "source": "聯合報，2022-08-12", "news": 737}, {"id": "pt", "type": "people", "track": "people", "date": "2023", "precision": "year", "certainty": "sure", "title": "台北市特教學校智障學生減少", "importance": 1, "why": "台北市特教學校數據的頭尾", "summary": "台北市四所特教學校的智能障礙學生，從 2003 年 259 人減為 2023 年 83 人。", "source": "台北市年報"}, {"id": "pn1", "type": "people", "track": "people", "date": "2024", "precision": "year", "certainty": "sure", "title": "智能障礙學生人數", "importance": 1, "why": "通報網數據的最後一年", "summary": "2024 年 16,800 人，比高峰的 2010 年減少 36%。", "source": "通報網全台數據"}];
+/* Google Sheet content: CSV parsing, row validation, link handling and loading with fallbacks.
+   The pure functions are shared with the dependency-free tests. */
+const SheetData = (() => {
+  const TRACK_NAMES = {'智力測驗':'iq','適應行為量表':'ab','法規與鑑定':'law','剪報':'news','研究':'lit','學生人數':'people'};
+  const TRACK_TYPES = {iq:'event',ab:'event',law:'event',news:'news',lit:'lit',people:'people'};
+  const PRECISIONS = {'日':'day','月':'month','年':'year','年代':'decade'};
+  const KINDS = {'照片':'photo','圖片':'photo','剪報':'clip','錄音':'audio','影片':'video','文字':'text'};
+  const text = v => String(v ?? '').replace(/\r\n?/g, '\n').trim();
+  const hidden = v => /^(否|不|no|n|false|0|隱藏)$/i.test(text(v));
+
+  function parseCSV(source) {
+    const rows = []; let row = [], cell = '', quoted = false;
+    const s = String(source).replace(/^﻿/, '');
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i];
+      if (quoted) {
+        if (c === '"') { if (s[i + 1] === '"') { cell += '"'; i++; } else quoted = false; }
+        else cell += c;
+      } else if (c === '"') quoted = true;
+      else if (c === ',') { row.push(cell); cell = ''; }
+      else if (c === '\n' || c === '\r') {
+        if (c === '\r' && s[i + 1] === '\n') i++;
+        row.push(cell); rows.push(row); row = []; cell = '';
+      } else cell += c;
+    }
+    if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+    return rows;
+  }
+  // First row is the header; blank rows are dropped. Each object remembers its sheet row number.
+  function toObjects(rows) {
+    if (!rows.length) return [];
+    const head = rows[0].map(text);
+    return rows.slice(1).map((r, i) => {
+      const o = {_row: i + 2};
+      head.forEach((h, j) => { if (h) o[h] = text(r[j]); });
+      return o;
+    }).filter(o => Object.keys(o).some(k => k !== '_row' && o[k]));
+  }
+
+  function parseDateText(value) {
+    const m = text(value).match(/^(\d{4})(?:\s*[-\/.年]\s*(\d{1,2}))?(?:\s*[-\/.月]\s*(\d{1,2}))?\s*日?$/);
+    if (!m) return null;
+    const y = +m[1], mo = m[2] ? +m[2] : 0, dd = m[3] ? +m[3] : 0;
+    if (y < 1800 || y > 2200 || mo > 12 || dd > 31) return null;
+    return {date: [y, mo && String(mo).padStart(2, '0'), mo && dd && String(dd).padStart(2, '0')].filter(Boolean).join('-'), mo, dd};
+  }
+
+  function toEvents(rows, newsCount, problems = []) {
+    const out = [], seen = new Set();
+    for (const r of rows) {
+      const where = `「事件」第 ${r._row} 列`;
+      if (hidden(r['顯示'])) continue;
+      const id = text(r['編號']);
+      if (!/^[\w-]+$/.test(id)) { problems.push(`${where}：編號只能用英文字母、數字、- 或 _，已略過。`); continue; }
+      if (seen.has(id)) { problems.push(`${where}：編號 ${id} 重複，已略過。`); continue; }
+      const track = TRACK_NAMES[text(r['類型'])];
+      if (!track) { problems.push(`${where}：類型「${text(r['類型'])}」不在清單內，已略過。`); continue; }
+      const d = parseDateText(r['日期']);
+      if (!d) { problems.push(`${where}：日期「${text(r['日期'])}」看不懂，已略過。`); continue; }
+      const title = text(r['標題']);
+      if (!title) { problems.push(`${where}：沒有標題，已略過。`); continue; }
+      let precision = PRECISIONS[text(r['日期精確度'])] || (d.dd ? 'day' : d.mo ? 'month' : 'year');
+      if (precision === 'day' && !d.dd) precision = d.mo ? 'month' : 'year';
+      if (precision === 'month' && !d.mo) precision = 'year';
+      let news = null;
+      if (text(r['剪報序號']) !== '') {
+        const n = Number(r['剪報序號']);
+        if (Number.isInteger(n) && n >= 0 && n < newsCount) news = n;
+        else problems.push(`${where}：剪報序號「${r['剪報序號']}」不存在，已忽略這一欄。`);
+      }
+      seen.add(id);
+      const e = {id, type: TRACK_TYPES[track], track, date: d.date, precision, certainty: precision === 'decade' ? 'approx' : 'sure',
+        title, summary: text(r['完整說明']) || title, memo: text(r['備註']), easy: text(r['易讀介紹']),
+        source: text(r['資料來源']) || '未註明', why: text(r['精選理由']), importance: 2};
+      if (precision === 'decade') e.when = Math.floor(+d.date.slice(0, 4) / 10) * 10 + '年代';
+      if (news != null) e.news = news;
+      out.push(e);
+    }
+    return out;
+  }
+
+  // "1:05 原文 | 中文對照" per line. Lines without a time are kept as untimed paragraphs.
+  function parseTranscript(value) {
+    const segments = [];
+    for (const line of text(value).split('\n').map(s => s.trim()).filter(Boolean)) {
+      const m = line.match(/^\[?(?:(\d{1,2}):)?(\d{1,3}):(\d{2})(?:\.\d+)?\]?\s*(.*)$/);
+      const body = m ? m[4] : line, bar = body.search(/[|｜]/);
+      const seg = {time: m ? (+(m[1] || 0)) * 3600 + (+m[2]) * 60 + (+m[3]) : null,
+        text: (bar < 0 ? body : body.slice(0, bar)).trim(), translation: bar < 0 ? '' : body.slice(bar + 1).trim()};
+      if (seg.text || seg.translation) segments.push(seg);
+    }
+    return segments;
+  }
+
+  const driveId = url => {
+    if (!/^https:\/\/(drive|docs)\.google\.com\//.test(url)) return null;
+    const m = url.match(/\/d\/([\w-]{10,})/) || url.match(/[?&]id=([\w-]{10,})/);
+    return m ? m[1] : null;
+  };
+  const youtubeId = url => {
+    const m = url.match(/^https?:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)([\w-]{6,})/) || url.match(/^https?:\/\/youtu\.be\/([\w-]{6,})/);
+    return m ? m[1] : null;
+  };
+  // Returns how a link should be shown for the given kind, or null if it cannot be used safely.
+  function resolveLink(value, kind) {
+    const url = text(value);
+    if (!url) return null;
+    const yt = youtubeId(url);
+    if (yt) return kind === 'video' ? {embed: 'https://www.youtube-nocookie.com/embed/' + yt, provider: 'youtube'} : null;
+    const id = driveId(url);
+    if (id) {
+      if (kind === 'photo' || kind === 'clip') return {src: 'https://lh3.googleusercontent.com/d/' + id + '=w1600', backup: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1600', provider: 'drive'};
+      if (kind === 'audio') return {src: 'https://drive.google.com/uc?export=download&id=' + id, embed: 'https://drive.google.com/file/d/' + id + '/preview', provider: 'drive'};
+      return {embed: 'https://drive.google.com/file/d/' + id + '/preview', provider: 'drive'};
+    }
+    if (/^https?:\/\//i.test(url)) return /[\s"'<>]/.test(url) ? null : {src: url, provider: 'url'};
+    // Site-relative file such as assets/interview.mp3
+    if (/^[^:\\?#\s"'<>]+$/.test(url) && !url.startsWith('/') && !url.includes('..')) return {src: url, provider: 'site'};
+    return null;
+  }
+
+  function toMedia(rows, eventIds, problems = []) {
+    const out = [], seen = new Set(), known = new Set(eventIds);
+    for (const r of rows) {
+      const where = `「附件」第 ${r._row} 列`;
+      if (hidden(r['顯示'])) continue;
+      const kind = KINDS[text(r['種類'])];
+      if (!kind) { problems.push(`${where}：種類「${text(r['種類'])}」不在清單內，已略過。`); continue; }
+      let id = text(r['編號']).replace(/[^\w-]/g, '') || 'r' + r._row;
+      if (seen.has(id)) id += '-r' + r._row;
+      const wanted = text(r['事件編號']).split(/[,，、;；\s]+/).filter(Boolean);
+      const events = wanted.filter(e => known.has(e));
+      wanted.filter(e => !known.has(e)).forEach(e => problems.push(`${where}：找不到事件 ${e}。`));
+      if (!events.length) { if (!wanted.length) problems.push(`${where}：沒有填事件編號，已略過。`); continue; }
+      const body = text(r['內文']);
+      const link = kind === 'text' ? null : resolveLink(r['連結'], kind);
+      if (kind === 'text' ? !body : !link) {
+        problems.push(kind === 'text' ? `${where}：文字附件沒有內文，已略過。` : `${where}：連結空白或無法使用，已略過。`);
+        continue;
+      }
+      seen.add(id);
+      const title = text(r['標題']) || text(r['種類']);
+      out.push({id, kind, events, title, caption: text(r['圖說']), alt: text(r['替代文字']) || title, text: body,
+        credit: text(r['來源與授權']), segments: kind === 'audio' || kind === 'video' ? parseTranscript(r['逐字稿']) : [], link});
+    }
+    return out;
+  }
+
+  // rows: {events:[row objects], media:[row objects]}
+  function build(rows, newsCount, origin = 'snapshot') {
+    const problems = [];
+    const events = toEvents(rows.events || [], newsCount, problems);
+    const media = toMedia(rows.media || [], events.map(e => e.id), problems);
+    return {events, media, problems, origin};
+  }
+
+  const CACHE_KEY = 'history-timeline.sheet.v1', SKIP_KEY = 'history-timeline.sheet.skip';
+  const csvUrl = (id, sheet) => `https://docs.google.com/spreadsheets/d/${encodeURIComponent(id)}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(sheet)}`;
+  async function fetchRows(config, timeout) {
+    const control = new AbortController(), timer = setTimeout(() => control.abort(), timeout);
+    try {
+      const get = async (sheet, required) => {
+        const response = await fetch(csvUrl(config.sheetId, sheet), {signal: control.signal, credentials: 'omit', cache: 'no-store'});
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const rows = parseCSV(await response.text());
+        // A missing tab silently returns the first tab, and a private sheet returns a sign-in page.
+        if (!rows.length || !required.every(h => rows[0].map(text).includes(h))) throw new Error('unexpected columns in ' + sheet);
+        return toObjects(rows);
+      };
+      const [events, media] = await Promise.all([get(config.eventsSheet || '事件', ['編號', '日期', '標題']), get(config.mediaSheet || '附件', ['事件編號', '種類'])]);
+      return {events, media};
+    } finally { clearTimeout(timer); }
+  }
+  // Live sheet -> last copy saved in this browser -> snapshot built into the page.
+  async function load(config, snapshot, newsCount) {
+    const fallback = () => build(snapshot, newsCount, 'snapshot');
+    let skip = false;
+    try { skip = sessionStorage.getItem(SKIP_KEY) === '1'; } catch {}
+    if (!config || !config.sheetId || skip) return fallback();
+    let cached = null;
+    try { cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); } catch {}
+    if (!cached || cached.sheetId !== config.sheetId || !cached.rows) cached = null;
+    try {
+      const rows = await fetchRows(config, cached ? 3000 : 5000);
+      const data = build(rows, newsCount, 'sheet');
+      if (!data.events.length) throw new Error('no usable events');
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify({sheetId: config.sheetId, saved: Date.now(), rows})); } catch {}
+      return data;
+    } catch (error) {
+      if (cached) { const data = build(cached.rows, newsCount, 'cache'); if (data.events.length) return data; }
+      return fallback();
+    }
+  }
+  // Called when live data broke the page: reload once using only the built-in snapshot.
+  function distrust() {
+    try { localStorage.removeItem(CACHE_KEY); if (sessionStorage.getItem(SKIP_KEY) === '1') return false; sessionStorage.setItem(SKIP_KEY, '1'); return true; } catch { return false; }
+  }
+  return {TRACK_NAMES, PRECISIONS, KINDS, parseCSV, toObjects, parseDateText, toEvents, toMedia, parseTranscript, resolveLink, build, csvUrl, load, distrust};
+})();
+
+const SITE_CONFIG = {"sheetId": "1epfZo0bWhy4XogVuadZny3zy7Yt11Wrish0nwKrA_L4", "eventsSheet": "事件", "mediaSheet": "附件"};
+const SHEET_SNAPSHOT = {"events": [{"編號": "n0", "顯示": "是", "類型": "剪報", "日期": "1962-01-15", "日期精確度": "日", "標題": "幼獅社", "完整說明": "中央日報 1962.01.15 的報導。用詞：白痴／低能；主要觀點：期待正常化/健全主義。", "備註": "", "易讀介紹": "", "資料來源": "中央日報，1962-01-15", "精選理由": "資料裡最早的一篇剪報", "剪報序號": "0"}, {"編號": "n2", "顯示": "是", "類型": "剪報", "日期": "1964-07-15", "日期精確度": "日", "標題": "設班 教育局告家長書", "完整說明": "中央日報 1964.07.15 的報導。用詞：智能不足；主要觀點：無。", "備註": "", "易讀介紹": "", "資料來源": "中央日報，1964-07-15", "精選理由": "「智能不足」這個詞第一次出現在剪報裡", "剪報序號": "2"}, {"編號": "n18", "顯示": "是", "類型": "剪報", "日期": "1967-09-25", "日期精確度": "日", "標題": "特教法草案", "完整說明": "中央日報 1967.09.25 的報導。用詞：白痴／低能、智能不足；主要觀點：倡議。", "備註": "", "易讀介紹": "", "資料來源": "中央日報，1967-09-25", "精選理由": "分類為「政策公告及回應—立法」", "剪報序號": "18"}, {"編號": "b1", "顯示": "是", "類型": "適應行為量表", "日期": "1970", "日期精確度": "年代", "標題": "引進文蘭社會成熟量表", "完整說明": "引進文蘭社會成熟量表。", "備註": "未建立國內常模。", "易讀介紹": "1970 年代，臺灣開始用一份美國的評量。\n它看孩子在生活中會做哪些事。\n可是那時候，還沒有用臺灣孩子的資料來比較。", "資料來源": "智能障礙重大事件表", "精選理由": "", "剪報序號": ""}, {"編號": "r0", "顯示": "是", "類型": "研究", "日期": "1971", "日期精確度": "年", "標題": "第一篇研究", "完整說明": "426 篇研究文獻裡，最早的一篇發表於 1971 年，研究設計是量化研究。", "備註": "", "易讀介紹": "1971 年，臺灣有了第一篇關於智能障礙的研究。\n1970 年代的研究很少，只有 7 篇。", "資料來源": "研究文獻編碼表", "精選理由": "資料裡最早的研究", "剪報序號": ""}, {"編號": "n23", "顯示": "是", "類型": "剪報", "日期": "1971-09-21", "日期精確度": "日", "標題": "教局呼籲就學 增班", "完整說明": "聯合報 1971.09.21 的報導。用詞：智能不足；主要觀點：家長拒絕標籤。", "備註": "", "易讀介紹": "", "資料來源": "聯合報，1971-09-21", "精選理由": "主要觀點「家長拒絕標籤」第一次出現", "剪報序號": "23"}, {"編號": "n26", "顯示": "是", "類型": "剪報", "日期": "1973-06-09", "日期精確度": "日", "標題": "展現學生作品", "完整說明": "聯合報 1973.06.09 的報導。用詞：智能不足；主要觀點：肯定障礙者(學習能力、成就)。", "備註": "", "易讀介紹": "", "資料來源": "聯合報，1973-06-09", "精選理由": "主要觀點「肯定障礙者」第一次出現", "剪報序號": "26"}, {"編號": "n37", "顯示": "是", "類型": "剪報", "日期": "1978-10-02", "日期精確度": "日", "標題": "佳音韻療育中心", "完整說明": "中央日報 1978.10.02 的報導。用詞：智能障礙；主要觀點：家人/專業人員犧牲奉獻。", "備註": "", "易讀介紹": "", "資料來源": "中央日報，1978-10-02", "精選理由": "「智能障礙」這個詞第一次出現在剪報裡", "剪報序號": "37"}, {"編號": "q1", "顯示": "是", "類型": "智力測驗", "日期": "1979", "日期精確度": "年", "標題": "WISC-R 修訂完成", "完整說明": "台灣完成魏克斯勒兒童智力量表（WISC-R）的修訂。", "備註": "適逢特教興盛，個別智力測驗列為甄選學生的項目之一（陳美芳，1985）。", "易讀介紹": "1979 年，臺灣完成兒童智力測驗的修訂版。\n學校用它來了解學生。", "資料來源": "智能障礙重大事件表", "精選理由": "", "剪報序號": ""}, {"編號": "l1", "顯示": "是", "類型": "法規與鑑定", "日期": "1981", "日期精確度": "年", "標題": "福利法明定鑑定工具", "完整說明": "殘障福利法施行細則明定智力量表或適應行為量表為鑑定智能不足兒童的工具（張德榮、徐享良，1986）。", "備註": "", "易讀介紹": "1981 年，法律寫清楚：\n要用智力測驗或生活能力的評量，判斷是不是智能障礙。", "資料來源": "智能障礙重大事件表", "精選理由": "", "剪報序號": ""}, {"編號": "rd4", "顯示": "是", "類型": "研究", "日期": "1982", "日期精確度": "年", "標題": "第一篇混合研究", "完整說明": "1982 年出現第一篇混合研究。整份資料共有 17 篇混合研究。", "備註": "", "易讀介紹": "1982 年，第一次有研究同時用數字和訪問來找答案。\n這種研究叫做「混合研究」，一共有 17 篇。", "資料來源": "研究文獻編碼表", "精選理由": "研究設計「混合研究」第一次出現", "剪報序號": ""}, {"編號": "b2", "顯示": "是", "類型": "適應行為量表", "日期": "1984", "日期精確度": "年", "標題": "文蘭適應行為量表", "完整說明": "文蘭社會成熟量表擴展為文蘭適應行為量表（VABS）第一版。", "備註": "", "易讀介紹": "1984 年，這份評量擴充成新的版本。\n它看一個人在生活上會不會做事，叫做「適應行為」。", "資料來源": "智能障礙重大事件表", "精選理由": "", "剪報序號": ""}, {"編號": "rd2", "顯示": "是", "類型": "研究", "日期": "1985", "日期精確度": "年", "標題": "第一篇質性研究", "完整說明": "1985 年出現第一篇質性研究。整份資料共有 63 篇質性研究。", "備註": "", "易讀介紹": "1985 年，第一次有研究去訪問人，聽他們說自己的故事。\n2000 年以後，這種研究才變多。", "資料來源": "研究文獻編碼表", "精選理由": "研究設計「質性研究」第一次出現", "剪報序號": ""}, {"編號": "n60", "顯示": "是", "類型": "剪報", "日期": "1985-02-13", "日期精確度": "日", "標題": "家長陳情", "完整說明": "聯合報 1985.02.13 的報導。用詞：智能不足；主要觀點：倡議。", "備註": "", "易讀介紹": "", "資料來源": "聯合報，1985-02-13", "精選理由": "家長陳情第一次出現在剪報裡", "剪報序號": "60"}, {"編號": "rt5", "顯示": "是", "類型": "研究", "日期": "1986", "日期精確度": "年", "標題": "第一篇權利意識研究", "完整說明": "1986 年出現第一篇以權利意識（包含性與自我倡議）為主題的研究。", "備註": "", "易讀介紹": "1986 年，第一次有研究談智能障礙者的權利。\n也是第一次有研究談「性」。", "資料來源": "研究文獻編碼表", "精選理由": "研究主題「權利意識」第一次出現", "剪報序號": ""}, {"編號": "b3", "顯示": "是", "類型": "適應行為量表", "日期": "1986-02", "日期精確度": "月", "標題": "引進修訂適應行為量表", "完整說明": "引進使用修訂適應行為量表（徐享良，1986）。", "備註": "以美國智能不足協會適應行為量表為藍本。", "易讀介紹": "1986 年，臺灣開始用一份新的評量。\n它看學生在生活中會做哪些事。", "資料來源": "智能障礙重大事件表", "精選理由": "", "剪報序號": ""}, {"編號": "l2", "顯示": "是", "類型": "法規與鑑定", "日期": "1987-03-25", "日期精確度": "日", "標題": "特教法細則分三類", "完整說明": "特殊教育法施行細則訂立。", "備註": "前項智能不足，依個別智力測驗之結果，分為左列三類：\n一、輕度智能不足：個別智力測驗之結果在平均數負三個標準差以上未達平均數負二個標準差。\n二、中度智能不足：個別智力測驗之結果在平均數負四個標準差以上未達平均數負三個標準差。\n三、重度智能不足：個別智力測驗之結果未達平均數負四個標準差。", "易讀介紹": "1987 年，法律依照智力測驗的分數，\n把智能障礙分成輕度、中度、重度三種。", "資料來源": "智能障礙重大事件表", "精選理由": "", "剪報序號": ""}, {"編號": "n87", "顯示": "是", "類型": "剪報", "日期": "1988-04-02", "日期精確度": "日", "標題": "歧視", "完整說明": "中國時報 1988.04.02 的報導。用詞：智能不足、智障、其他用詞；主要觀點：家長拒絕標籤。", "備註": "", "易讀介紹": "", "資料來源": "中國時報，1988-04-02", "精選理由": "「智障」這個詞第一次出現在剪報裡", "剪報序號": "87"}, {"編號": "l3", "顯示": "是", "類型": "法規與鑑定", "日期": "1990-01-12", "日期精確度": "日", "標題": "福利法改稱智能障礙者", "完整說明": "殘障福利法第三條將智能不足改稱為智能障礙者。", "備註": "", "易讀介紹": "1990 年，法律把舊的稱呼「智能不足」，\n改成「智能障礙者」。", "資料來源": "智能障礙重大事件表", "精選理由": "", "剪報序號": ""}, {"編號": "l4", "顯示": "是", "類型": "法規與鑑定", "日期": "1990-06", "日期精確度": "年", "標題": "第二次特殊學生普查", "完整說明": "第二次特殊學生普查。", "備註": "文蘭適應量表發展（簡式，配合普查之需）。", "易讀介紹": "1990 年，教育部第二次調查：\n有多少需要特殊教育的學生。", "資料來源": "智能障礙重大事件表", "精選理由": "", "剪報序號": ""}, {"編號": "q2", "顯示": "是", "類型": "智力測驗", "日期": "1991", "日期精確度": "年", "標題": "WISC-III 出版", "完整說明": "魏氏兒童智力測驗（WISC-III）第三版出版。", "備註": "", "易讀介紹": "1991 年，兒童智力測驗出了第三版。", "資料來源": "智能障礙重大事件表", "精選理由": "", "剪報序號": ""}, {"編號": "n118", "顯示": "是", "類型": "剪報", "日期": "1991-10-13", "日期精確度": "日", "標題": "優生保健法", "完整說明": "中國時報 1991.10.13 的報導。用詞：智障；主要觀點：優生保健。", "備註": "", "易讀介紹": "", "資料來源": "中國時報，1991-10-13", "精選理由": "分類為「政策公告及回應—立法」", "剪報序號": "118"}, {"編號": "l5", "顯示": "是", "類型": "法規與鑑定", "日期": "1997-04-22", "日期精確度": "日", "標題": "特教法改稱智能障礙", "完整說明": "特殊教育法第三條名詞修訂為智能障礙。", "備註": "", "易讀介紹": "1997 年，特殊教育法也改用「智能障礙」這個名稱。", "資料來源": "智能障礙重大事件表", "精選理由": "", "剪報序號": ""}, {"編號": "pm0", "顯示": "是", "類型": "學生人數", "日期": "1999", "日期精確度": "年", "標題": "衛福部統計起點", "完整說明": "1999 年底，全台領有身心障礙證明的智能障礙者 68,044 人。", "備註": "", "易讀介紹": "1999 年，臺灣有 68,044 位智能障礙者。\n之後人數慢慢變多。", "資料來源": "衛福部全台數據", "精選理由": "衛福部數據的第一年", "剪報序號": ""}, {"編號": "n319", "顯示": "是", "類型": "剪報", "日期": "1999-07-07", "日期精確度": "日", "標題": "裝傻免役爭議 倡議修兵役法", "完整說明": "中國時報 1999.07.07 的報導。用詞：智能不足；主要觀點：家長拒絕標籤。", "備註": "", "易讀介紹": "", "資料來源": "中國時報，1999-07-07", "精選理由": "分類為「政策公告及回應—修法」", "剪報序號": "319"}, {"編號": "n348", "顯示": "是", "類型": "剪報", "日期": "2001-04-05", "日期精確度": "日", "標題": "法扶 公設辯護人（智能障礙者也會受惠）", "完整說明": "聯合報 2001.04.05 的報導。用詞：智能障礙；主要觀點：無。", "備註": "", "易讀介紹": "", "資料來源": "聯合報，2001-04-05", "精選理由": "分類為「政策公告及回應—立法」", "剪報序號": "348"}, {"編號": "rd3", "顯示": "是", "類型": "研究", "日期": "2002", "日期精確度": "年", "標題": "第一篇行動研究", "完整說明": "2002 年出現第一篇行動研究。整份資料共有 18 篇行動研究。", "備註": "", "易讀介紹": "2002 年，第一次有老師在自己的教室裡做研究，\n一邊教、一邊改進。\n這種研究叫做「行動研究」。", "資料來源": "研究文獻編碼表", "精選理由": "研究設計「行動研究」第一次出現", "剪報序號": ""}, {"編號": "l6", "顯示": "是", "類型": "法規與鑑定", "日期": "2002-05-09", "日期精確度": "日", "標題": "鑑定標準訂立", "完整說明": "身心障礙及資賦優異學生鑑定標準訂立。", "備註": "本法第三條第二項第一款所稱智能障礙，指個人之智能發展較同年齡者明顯遲緩，且在學習及生活適應能力表現上有嚴重困難者；其鑑定標準如下：\n一、心智功能明顯低下或個別智力測驗結果未達平均數負二個標準差。\n二、學生在自我照顧、動作、溝通、社會情緒或學科學習等表現上較同年齡者有顯著困難情形。", "易讀介紹": "2002 年，政府寫下新的標準，用來判斷學生是不是智能障礙。\n要同時看智力，和學習、生活上的困難。", "資料來源": "智能障礙重大事件表", "精選理由": "", "剪報序號": ""}, {"編號": "q3", "顯示": "是", "類型": "智力測驗", "日期": "2003", "日期精確度": "年", "標題": "WISC-IV 英文版出版", "完整說明": "魏氏兒童智力量表英文第四版（WISC-IV）出版。", "備註": "", "易讀介紹": "2003 年，兒童智力測驗的英文第四版出版。", "資料來源": "智能障礙重大事件表", "精選理由": "", "剪報序號": ""}, {"編號": "b4", "顯示": "是", "類型": "適應行為量表", "日期": "2003", "日期精確度": "年", "標題": "社會適應表現檢核表", "完整說明": "社會適應表現檢核表出版（盧台華等，2003）。", "備註": "國內第一本以 AAMR 五大領域做分量表依據設計的適應行為量表（社會適應表現檢核表之信效度及其相關因素之研究）。", "易讀介紹": "2003 年，臺灣有了自己做的生活能力評量。", "資料來源": "智能障礙重大事件表", "精選理由": "", "剪報序號": ""}, {"編號": "rr3", "顯示": "是", "類型": "研究", "日期": "2003", "日期精確度": "年", "標題": "第一篇性教育介入研究", "完整說明": "2003 年出現第一篇性教育介入的研究。", "備註": "", "易讀介紹": "2003 年，第一次有研究去教智能障礙者認識「性」，\n再看看教得好不好。", "資料來源": "研究文獻編碼表", "精選理由": "權利議題「性教育介入」第一次出現", "剪報序號": ""}, {"編號": "b5", "顯示": "是", "類型": "適應行為量表", "日期": "2004", "日期精確度": "年", "標題": "文蘭中文編譯版出版", "完整說明": "文蘭第一版中文編譯版出版。", "備註": "", "易讀介紹": "2004 年，1984 年那份生活能力評量，出了中文翻譯版。", "資料來源": "智能障礙重大事件表", "精選理由": "", "剪報序號": ""}, {"編號": "rd5", "顯示": "是", "類型": "研究", "日期": "2005", "日期精確度": "年", "標題": "第一篇文獻回顧", "完整說明": "2005 年出現第一篇文獻回顧。整份資料共有 10 篇文獻回顧。", "備註": "", "易讀介紹": "2005 年，第一次有研究整理很多別人的研究。\n這種研究叫做「文獻回顧」。", "資料來源": "研究文獻編碼表", "精選理由": "研究設計「文獻回顧」第一次出現", "剪報序號": ""}, {"編號": "rr2", "顯示": "是", "類型": "研究", "日期": "2005", "日期精確度": "年", "標題": "第一篇自我倡議研究", "完整說明": "2005 年出現第一篇談自我倡議或自我決策的研究。", "備註": "", "易讀介紹": "2005 年，第一次有研究談「自我倡議」。\n意思是：智能障礙者自己說出想要什麼，自己做決定。", "資料來源": "研究文獻編碼表", "精選理由": "權利議題「自我倡議/自我決策」第一次出現", "剪報序號": ""}, {"編號": "rpk", "顯示": "是", "類型": "研究", "日期": "2006", "日期精確度": "年", "標題": "研究篇數最多的一年", "完整說明": "2006 年有 28 篇研究，是整份資料裡最多的一年。", "備註": "", "易讀介紹": "2006 年，是研究最多的一年，有 28 篇。", "資料來源": "研究文獻編碼表", "精選理由": "每年篇數的高峰", "剪報序號": ""}, {"編號": "pn0", "顯示": "是", "類型": "學生人數", "日期": "2008", "日期精確度": "年", "標題": "通報網學生人數起點", "完整說明": "2008 年，全台特教通報網的智能障礙學生 24,945 人。", "備註": "", "易讀介紹": "2008 年，全國學校裡有 24,945 位智能障礙學生。\n這是本站學生人數資料的第一年。", "資料來源": "通報網全台數據", "精選理由": "通報網數據的第一年", "剪報序號": ""}, {"編號": "n524", "顯示": "是", "類型": "剪報", "日期": "2009-05-03", "日期精確度": "日", "標題": "禁治產修法", "完整說明": "聯合晚報 2009.05.03 的報導。用詞：智能不足；主要觀點：倡議。", "備註": "", "易讀介紹": "", "資料來源": "聯合晚報，2009-05-03", "精選理由": "分類為「政策公告及回應—修法」", "剪報序號": "524"}, {"編號": "n537", "顯示": "是", "類型": "剪報", "日期": "2009-12-11", "日期精確度": "日", "標題": "健保給付牙科治療", "完整說明": "聯合報 2009.12.11 的報導。用詞：智能障礙；主要觀點：無。", "備註": "", "易讀介紹": "", "資料來源": "聯合報，2009-12-11", "精選理由": "分類為「政策公告及回應—修法」", "剪報序號": "537"}, {"編號": "pnk", "顯示": "是", "類型": "學生人數", "日期": "2010", "日期精確度": "年", "標題": "智能障礙學生人數最多", "完整說明": "2010 年 26,059 人，之後逐年減少。", "備註": "", "易讀介紹": "2010 年，全國學校裡的智能障礙學生最多，有 26,059 人。\n之後每年慢慢變少。", "資料來源": "通報網全台數據", "精選理由": "智能障礙學生人數的高峰", "剪報序號": ""}, {"編號": "n573", "顯示": "是", "類型": "剪報", "日期": "2011-08-29", "日期精確度": "日", "標題": "資源班飽和拒收輕度智障", "完整說明": "中國時報 2011.08.29 的報導。用詞：智障、智能障礙；主要觀點：無。", "備註": "", "易讀介紹": "", "資料來源": "中國時報，2011-08-29", "精選理由": "2010 年代第一篇招生、安置的報導", "剪報序號": "573"}, {"編號": "l7", "顯示": "是", "類型": "法規與鑑定", "日期": "2012-09-28", "日期精確度": "日", "標題": "鑑定標準修訂", "完整說明": "身心障礙及資賦優異學生鑑定標準修訂（第一次針對智能障礙修訂）。", "備註": "本法第三條第一款所稱智能障礙，指個人之智能發展較同年齡者明顯遲緩，且在學習及生活適應能力表現上有顯著困難者。\n前項所定智能障礙，其鑑定基準依下列各款規定：\n一、心智功能明顯低下或個別智力測驗結果未達平均數負二個標準差。\n二、學生在生活自理、動作與行動能力、語言與溝通、社會人際與情緒行為等任一向度及學科（領域）學習之表現較同年齡者有顯著困難情形。", "易讀介紹": "2012 年，判斷學生是不是智能障礙的標準修改了。\n要看的生活能力項目，寫得更清楚。", "資料來源": "智能障礙重大事件表", "精選理由": "", "剪報序號": ""}, {"編號": "pxl", "顯示": "是", "類型": "學生人數", "日期": "2013", "日期精確度": "年", "標題": "學習障礙學生人數超過智能障礙", "完整說明": "2013 年起，學習障礙學生（26,797 人）多於智能障礙學生（25,088 人）。", "備註": "", "易讀介紹": "2013 年，在全國的學校裡，\n學習障礙的學生，第一次比智能障礙的學生多。", "資料來源": "通報網全台數據", "精選理由": "學習障礙與智能障礙的人數交叉", "剪報序號": ""}, {"編號": "q4", "顯示": "是", "類型": "智力測驗", "日期": "2014", "日期精確度": "年", "標題": "WISC-V 英文版出版", "完整說明": "魏氏兒童智力量表英文第五版（WISC-V）出版。", "備註": "", "易讀介紹": "2014 年，兒童智力測驗的英文第五版出版。", "資料來源": "智能障礙重大事件表", "精選理由": "", "剪報序號": ""}, {"編號": "pm1", "顯示": "是", "類型": "學生人數", "日期": "2014", "日期精確度": "年", "標題": "智能障礙總人數破十萬", "完整說明": "2014 年底 100,588 人，第一次超過十萬人。到 2024 年底是 102,556 人。", "備註": "", "易讀介紹": "2014 年，臺灣的智能障礙者超過十萬人。", "資料來源": "衛福部全台數據", "精選理由": "衛福部數據第一次超過十萬人", "剪報序號": ""}, {"編號": "q5", "顯示": "是", "類型": "智力測驗", "日期": "2018-09", "日期精確度": "月", "標題": "WISC-V 中文版出版", "完整說明": "魏氏兒童智力量表中文第五版（WISC-V）出版。", "備註": "", "易讀介紹": "2018 年，新的兒童智力測驗中文版出版。", "資料來源": "智能障礙重大事件表", "精選理由": "", "剪報序號": ""}, {"編號": "pxa", "顯示": "是", "類型": "學生人數", "日期": "2022", "日期精確度": "年", "標題": "自閉症學生人數超過智能障礙", "完整說明": "2022 年起，自閉症學生（18,853 人）多於智能障礙學生（17,608 人）。", "備註": "", "易讀介紹": "2022 年，在全國的學校裡，\n自閉症的學生，第一次比智能障礙的學生多。", "資料來源": "通報網全台數據", "精選理由": "自閉症與智能障礙的人數交叉", "剪報序號": ""}, {"編號": "n737", "顯示": "是", "類型": "剪報", "日期": "2022-08-12", "日期精確度": "日", "標題": "智障母誤棄嬰", "完整說明": "聯合報 2022.08.12 的報導。用詞：智能障礙；主要觀點：沈重負擔/同情憐憫。", "備註": "", "易讀介紹": "", "資料來源": "聯合報，2022-08-12", "精選理由": "資料裡最晚的一篇剪報", "剪報序號": "737"}, {"編號": "pt", "顯示": "是", "類型": "學生人數", "日期": "2023", "日期精確度": "年", "標題": "台北市特教學校智障學生減少", "完整說明": "台北市四所特教學校的智能障礙學生，從 2003 年 259 人減為 2023 年 83 人。", "備註": "", "易讀介紹": "臺北市有四所特殊教育學校。\n裡面的智能障礙學生，2003 年有 259 人，2023 年只剩 83 人。", "資料來源": "台北市年報", "精選理由": "台北市特教學校數據的頭尾", "剪報序號": ""}, {"編號": "pn1", "顯示": "是", "類型": "學生人數", "日期": "2024", "日期精確度": "年", "標題": "智能障礙學生人數", "完整說明": "2024 年 16,800 人，比高峰的 2010 年減少 36%。", "備註": "", "易讀介紹": "2024 年，全國學校裡的智能障礙學生有 16,800 人，\n比 2010 年少了很多。\n可是全臺灣的智能障礙者，還是有十萬人左右。", "資料來源": "通報網全台數據", "精選理由": "通報網數據的最後一年", "剪報序號": ""}, {"編號": "l8", "顯示": "是", "類型": "法規與鑑定", "日期": "2024-04-29", "日期精確度": "日", "標題": "鑑定辦法再修訂", "完整說明": "特殊教育學生及幼兒鑑定辦法（第二次針對智能障礙修訂）。", "備註": "原因說明：智能發展改成心智功能；修正第一項「學習及生活適應能力」為「適應行為及學業學習」（參考國際上評估工具為適應行為量表（adapted behavior），不僅限於生活適應）。\n本法第三條第一款所稱智能障礙，指個人在發展階段，其心智功能、適應行為及學業學習表現，較同年齡者有顯著困難。\n前項所定智能障礙，其鑑定基準依下列各款規定：\n一、心智功能明顯低下或個別智力測驗結果未達平均數負二個標準差。\n二、學生在生活自理、動作與行動能力、語言與溝通、社會人際與情緒行為等任一向度及學科（領域）學習之表現較同年齡者有顯著困難情形。", "易讀介紹": "2024 年，判斷學生是不是智能障礙的辦法又修改了。\n要看想事情的能力、生活能力和學習表現。", "資料來源": "智能障礙重大事件表", "精選理由": "", "剪報序號": ""}], "media": []};
+function boot(SHEET){
+/* ============ 共用的工具與事件 ============
+   事件由 SHEET.events 提供（Google 試算表或內建備份 sheet-snapshot.json）。 */
 const $ = (s,r) => (r||document).querySelector(s);
 const $$ = (s,r) => Array.from((r||document).querySelectorAll(s));
 const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -670,25 +885,13 @@ function mark(shape,x,y,r,attrs){
 // 小圖示：實心，或空心（篩選還沒選到的軌道）
 const icon = (k,hollow) => `<svg class="ico" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" focusable="false">${mark(TRACKS[k].shape,7,7,hollow?4:4.6, hollow ? `fill="var(--paper)" stroke="${colorOf(k)}" stroke-width="2"` : `fill="${colorOf(k)}"`)}</svg>`;
 
-/* ---------- 50 件事件 ---------- */
-// 重大事件表的重要度（1–3）：縮放到全覽時只寫出 3 的名稱
-const IMPORTANCE = {q1:3,q2:2,q3:2,q4:2,q5:3, b1:3,b2:3,b3:2,b4:2,b5:2, l1:3,l2:3,l3:3,l4:2,l5:3,l6:3,l7:3,l8:3};
+/* ---------- 事件：來自 Google 試算表「事件」分頁（或網站內建備份），見 src-reader/02-sheet.js ---------- */
 function parseDate(e){
   const p = String(e.date).split('-').map(Number);
   e.y = p[0]; e.mo = p[1]||0; e.dd = p[2]||0; e.t = p[0]+((p[1]||1)-1)/12+((p[2]||1)-1)/372; e.dec = Math.floor(e.y/10)*10;
 }
 const EV = [];
-TREE.events.filter(e=>e.id!=='root').forEach(e=>{
-  const lines = e.desc.split('\n'), k = lines.findIndex(s=>s.startsWith('備註：'));
-  const x = {id:e.id, type:'event', track:e.theme, title:e.title, date:e.date, when:e.when, importance:IMPORTANCE[e.id]||2,
-    summary:(k<0?lines:lines.slice(0,k)).join('\n'), memo:k<0 ? '' : lines.slice(k).join('\n').replace(/^備註：/,''),
-    source:'智能障礙重大事件表', parents:e.parents.filter(p=>p!=='root'), trends:e.trends||[], media:[]};
-  parseDate(x);
-  x.precision = /年代/.test(e.when||'') ? 'decade' : e.when ? 'year' : x.dd ? 'day' : x.mo ? 'month' : 'year';
-  x.certainty = x.precision==='decade' ? 'approx' : 'sure';
-  EV.push(x);
-});
-PICK.forEach(p=>{ const x = Object.assign({parents:[], trends:[], memo:'', media:[]}, p); parseDate(x); if(x.news!=null) x.media.push({kind:'clip', i:x.news}); EV.push(x); });
+SHEET.events.forEach(p=>{ const x = Object.assign({parents:[], trends:[], memo:'', media:[]}, p); parseDate(x); if(x.news!=null) x.media.push({kind:'clip', i:x.news}); EV.push(x); });
 EV.sort((a,b)=>a.t-b.t || TK.indexOf(a.track)-TK.indexOf(b.track));
 EV.forEach((e,i)=>e.n = i);
 const byId = Object.fromEntries(EV.map(e=>[e.id,e]));
@@ -734,70 +937,6 @@ function shares(t){
 }
 // 每年的剪報篇數（概覽列的密度）
 const NEWS_BY_Y = {}; NEWS.forEach(a=>{ NEWS_BY_Y[a.y] = (NEWS_BY_Y[a.y]||0)+1; });
-/* ============ 易讀版 ============
-   每件事一段：短句、常用詞，一句一個意思（一行一句）。
-   有 25 段沿用「年表」展區的易讀版（分支 claude/horizontal-timeline-design-gsfov2 的 75-chron.js），其餘是這次補寫的。
-   剪報只知道報別、日期、整理時的標題與編碼，補寫時只寫這些看得出來的事，沒有猜報導內文。
-   這是草稿，請特教專業人員或自我倡議者審閱；審閱過後把 EASY_DRAFT 改成 false，卡片上就不再寫「草稿」 */
-const EASY_DRAFT = true;
-const EASY = {
-  // 重大事件：智力測驗
-  q1:'1979 年，臺灣完成兒童智力測驗的修訂版。\n學校用它來了解學生。',
-  q2:'1991 年，兒童智力測驗出了第三版。',
-  q3:'2003 年，兒童智力測驗的英文第四版出版。',
-  q4:'2014 年，兒童智力測驗的英文第五版出版。',
-  q5:'2018 年，新的兒童智力測驗中文版出版。',
-  // 重大事件：適應行為量表
-  b1:'1970 年代，臺灣開始用一份美國的評量。\n它看孩子在生活中會做哪些事。\n可是那時候，還沒有用臺灣孩子的資料來比較。',
-  b2:'1984 年，這份評量擴充成新的版本。\n它看一個人在生活上會不會做事，叫做「適應行為」。',
-  b3:'1986 年，臺灣開始用一份新的評量。\n它看學生在生活中會做哪些事。',
-  b4:'2003 年，臺灣有了自己做的生活能力評量。',
-  b5:'2004 年，1984 年那份生活能力評量，出了中文翻譯版。',
-  // 重大事件：法規與鑑定
-  l1:'1981 年，法律寫清楚：\n要用智力測驗或生活能力的評量，判斷是不是智能障礙。',
-  l2:'1987 年，法律依照智力測驗的分數，\n把智能障礙分成輕度、中度、重度三種。',
-  l3:'1990 年，法律把舊的稱呼「智能不足」，\n改成「智能障礙者」。',
-  l4:'1990 年，教育部第二次調查：\n有多少需要特殊教育的學生。',
-  l5:'1997 年，特殊教育法也改用「智能障礙」這個名稱。',
-  l6:'2002 年，政府寫下新的標準，用來判斷學生是不是智能障礙。\n要同時看智力，和學習、生活上的困難。',
-  l7:'2012 年，判斷學生是不是智能障礙的標準修改了。\n要看的生活能力項目，寫得更清楚。',
-  l8:'2024 年，判斷學生是不是智能障礙的辦法又修改了。\n要看想事情的能力、生活能力和學習表現。',
-  // 剪報
-  n0:'1962 年，是本站最早的一篇剪報。\n那時候的報紙，常用「白痴」、「低能」這種不好的詞。',
-  n2:'1964 年，報紙第一次用「智能不足」這個詞。\n那篇報導在說：學校要開特別的班級。',
-  n18:'1967 年，報紙報導特殊教育法的草案。\n草案就是還沒有通過的法律。\n這篇報導在幫忙爭取孩子受教育的權利。',
-  n23:'1971 年，教育局請家長讓孩子來上學，也增加班級。\n可是有些家長怕孩子被貼上標籤，不想讓孩子去。',
-  n26:'1973 年，報紙報導學生的作品展覽。\n這是報紙第一次稱讚智能障礙學生的能力。',
-  n37:'1978 年，報紙第一次用「智能障礙」這個詞。\n可是之後好幾年，報紙還是比較常用「智能不足」。',
-  n60:'1985 年，家長一起向政府陳情。\n報紙連續兩天報導家長的要求。\n1980 年代，是報紙最常幫忙爭取權利的時候。',
-  n87:'1988 年，報紙第一次用「智障」這個簡短的說法。\n那篇報導說：家長不希望孩子被貼上標籤。\n後來「智障」變得很常見。',
-  n118:'1991 年，報紙報導《優生保健法》。\n這篇報導從「不要生出障礙的孩子」的角度來寫。',
-  n319:'1999 年，有人被說假裝智能障礙，不用當兵。\n報紙報導這件爭議，也有人要求修改兵役的法律。',
-  n348:'2001 年，報紙報導：法院會幫沒有律師的人找辯護的人。\n報導說，智能障礙者也會因此得到幫忙。',
-  n524:'2009 年，報紙報導「禁治產」的法律要修改。\n這個法律和誰可以替別人做決定有關。',
-  n537:'2009 年，報紙報導：健保要給付身心障礙者看牙齒的費用。',
-  n573:'2011 年，報紙報導：資源班的學生太多，\n有些輕度智能障礙的學生沒辦法進去。',
-  n737:'2022 年，是本站最晚的一篇剪報。\n報導一位智能障礙的媽媽和她的嬰兒。\n報紙把這件事寫得很沉重、很可憐。',
-  // 研究
-  r0:'1971 年，臺灣有了第一篇關於智能障礙的研究。\n1970 年代的研究很少，只有 7 篇。',
-  rd4:'1982 年，第一次有研究同時用數字和訪問來找答案。\n這種研究叫做「混合研究」，一共有 17 篇。',
-  rd2:'1985 年，第一次有研究去訪問人，聽他們說自己的故事。\n2000 年以後，這種研究才變多。',
-  rt5:'1986 年，第一次有研究談智能障礙者的權利。\n也是第一次有研究談「性」。',
-  rd3:'2002 年，第一次有老師在自己的教室裡做研究，\n一邊教、一邊改進。\n這種研究叫做「行動研究」。',
-  rr3:'2003 年，第一次有研究去教智能障礙者認識「性」，\n再看看教得好不好。',
-  rd5:'2005 年，第一次有研究整理很多別人的研究。\n這種研究叫做「文獻回顧」。',
-  rr2:'2005 年，第一次有研究談「自我倡議」。\n意思是：智能障礙者自己說出想要什麼，自己做決定。',
-  rpk:'2006 年，是研究最多的一年，有 28 篇。',
-  // 學生人數與總人數
-  pm0:'1999 年，臺灣有 68,044 位智能障礙者。\n之後人數慢慢變多。',
-  pn0:'2008 年，全國學校裡有 24,945 位智能障礙學生。\n這是本站學生人數資料的第一年。',
-  pnk:'2010 年，全國學校裡的智能障礙學生最多，有 26,059 人。\n之後每年慢慢變少。',
-  pxl:'2013 年，在全國的學校裡，\n學習障礙的學生，第一次比智能障礙的學生多。',
-  pm1:'2014 年，臺灣的智能障礙者超過十萬人。',
-  pxa:'2022 年，在全國的學校裡，\n自閉症的學生，第一次比智能障礙的學生多。',
-  pt:'臺北市有四所特殊教育學校。\n裡面的智能障礙學生，2003 年有 259 人，2023 年只剩 83 人。',
-  pn1:'2024 年，全國學校裡的智能障礙學生有 16,800 人，\n比 2010 年少了很多。\n可是全臺灣的智能障礙者，還是有十萬人左右。'
-};
 
 const READER_MEDIA = {"items": [{"id": "sample-photo", "kind": "photo", "sample": true, "events": ["n0", "q1", "l3"], "src": "assets/sample-learning-room.png", "title": "學習空間照片示意", "alt": "AI 生成示意照片：明亮的空教室內有木桌、椅子與書架；非歷史原件。", "caption": "AI 生成的當代學習空間。僅示範照片與圖說的呈現，不是這個事件的照片。"}, {"id": "sample-clip", "kind": "clip", "sample": true, "events": ["n0", "q1", "l3"], "allNews": true, "src": "assets/sample-newspaper.png", "title": "報紙剪報版面示意", "alt": "剪報版面示意圖，上方寫有剪報版面示意及示意、非歷史原件，下方為印刷欄位。", "caption": "AI 生成的剪報版面示意，不是本篇剪報的掃描圖。報別、日期、整理標題及編碼取自實際資料。", "text": "這裡示範日後放入經授權的剪報內文。尚未提供原件全文，不能由標題或編碼補寫新聞內容。"}, {"id": "sample-audio", "kind": "audio", "sample": true, "events": ["n0", "q1", "l3"], "src": "assets/sample-audio.wav", "title": "錄音與逐字稿示例", "caption": "英文合成語音，非真人訪談，也不是歷史錄音。示範播放、拖曳進度、調整速度及逐字稿跳轉。", "segments": [{"time": 0, "text": "This is a sample recording for the event tree website.", "translation": "這是事件樹網站的示範錄音。"}, {"time": 4.6, "text": "It demonstrates audio playback and a transcript.", "translation": "示範錄音播放與逐字稿。"}, {"time": 8.6, "text": "This is not an interview or a historical recording.", "translation": "這不是訪談，也不是歷史錄音。"}]}]};
 /* Pure reading/filtering rules. Shared with the dependency-free model tests. */
@@ -827,8 +966,8 @@ const ReaderData = (() => {
   const names={n0:'本站最早收錄的剪報',n2:'教育局設班告家長書的報導',n60:'家長陳情的相關報導',n87:'使用「智障」用語的剪報',n737:'本站最後收錄的剪報（2022）'};
   function title(e) {if(names[e.id])return names[e.id];if(e.type==='lit'&&e.title.startsWith('第一篇'))return '本站收錄的'+e.title.replace('第一篇','首篇');return e.title;}
   function easy(e) {
-    if(e.news!=null){const n=NEWS[e.news];return [`${n.d.replace(/-/g,'．')}，${n.o}刊出一篇報導。`,`整理標題是「${n.t}」。`,`這篇剪報編到的用語：${n.wg.join('、')||'未編碼'}。`];}
-    const lines=(EASY[e.id]||e.summary).split('\n').filter(Boolean);
+    if(!e.easy&&e.news!=null){const n=NEWS[e.news];return [`${n.d.replace(/-/g,'．')}，${n.o}刊出一篇報導。`,`整理標題是「${n.t}」。`,`這篇剪報編到的用語：${n.wg.join('、')||'未編碼'}。`];}
+    const lines=(e.easy||e.summary).split('\n').filter(Boolean);
     if(e.type==='lit') return ['以下描述以本站收錄的研究資料為範圍。',...lines];
     return lines;
   }
@@ -876,7 +1015,7 @@ const ReaderData = (() => {
   if('scrollRestoration' in history)history.scrollRestoration='manual';
   const modes={select:'selection',read:'reader',news:'newsLibrary'};
   const say=text=>{el('readerStatus').textContent=text;};
-  function pauseAudio(root=document){all('audio',root).forEach(a=>a.pause());}
+  function pauseAudio(root=document){all('audio,video',root).forEach(a=>a.pause());all('.media-frame iframe',root).forEach(f=>{f.src=f.src;});}
   function savePrefs(){try{localStorage.setItem('history-timeline.preferences.v1',JSON.stringify({easy:state.easy,large:state.large}));}catch{}}
   function applyPrefs(){document.documentElement.classList.toggle('large-text',state.large);all('.easy-section').forEach(n=>n.hidden=!state.easy);all('.full-description').forEach(n=>n.open=!state.easy);el('easyToggle').checked=state.easy;el('largeToggle').checked=state.large;}
   function capturePosition(){
@@ -944,16 +1083,42 @@ const ReaderData = (() => {
   }
   el('filterForm').addEventListener('submit',e=>{e.preventDefault();if(state.draft.types.length)commit(state.draft);});
   el('readAll').addEventListener('click',()=>commit(D.defaults()));el('cancelFilters').addEventListener('click',()=>{state.draft=D.clone(state.applied);mode('read');});
-  function mediaFor(event){return READER_MEDIA.items.filter(m=>!m.sample&&(m.events?.includes(event.id)||(m.allNews&&event.track==='news')));}
+  const KIND_LABEL={photo:'照片',clip:'剪報',audio:'錄音',video:'影片',text:'文字'};
+  function mediaFor(event){return SHEET.media.filter(m=>m.events.includes(event.id));}
+  const findMedia=id=>SHEET.media.find(m=>m.id===id)||READER_MEDIA.items.find(m=>m.id===id);
+  const srcOf=m=>m.link?m.link.src:m.src;
+  const paragraphs=t=>String(t||'').split('\n').filter(Boolean).map(x=>`<p>${esc(x)}</p>`).join('');
+  const clock=t=>(t>=3600?Math.floor(t/3600)+':'+String(Math.floor(t%3600/60)).padStart(2,'0'):Math.floor(t/60))+':'+String(Math.floor(t%60)).padStart(2,'0');
+  const frame=(src,title,kind)=>`<div class="media-frame" data-frame="${kind}"><iframe src="${esc(src)}" title="${esc(title)}" loading="lazy" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`;
+  // player: id of an <audio>/<video> element that timed segments can seek; empty when playback is an embedded frame.
+  function transcriptHtml(m,player){
+    const segments=m.segments||[];if(!segments.length)return '';
+    const translated=segments.some(s=>s.translation);
+    return `<details class="transcript more"><summary>${translated?'閱讀逐字稿與中文對照':'閱讀逐字稿'}</summary><ol>${segments.map((s,i)=>{
+      const timed=s.time!=null;
+      const head=timed?(player?`<button type="button" data-seek="${s.time}" data-player="${player}">${clock(s.time)} 跳至此段</button>`:`<span class="transcript-time">${clock(s.time)}</span>`):'';
+      return `<li${timed&&player?` data-audio="${player}" data-segment="${i}" data-start="${s.time}"`:''}>${head}${s.text?`<p>${esc(s.text)}</p>`:''}${s.translation?`<p class="translation">${esc(s.translation)}</p>`:''}</li>`;}).join('')}</ol></details>`;
+  }
   function mediaHtml(event,{samples=false}={}){
     const items=samples?READER_MEDIA.items.filter(item=>item.sample):mediaFor(event);if(!items.length)return '';
     const title = '<h3>事件附件</h3>';
     const notice = items.some(item=>item.sample) ? '<p class="sample-notice">以下示例僅呈現附件樣式，與歷史事件沒有史料關聯。</p>' : '';
-    const selector = items.length > 1 ? `<div class="media-switch" role="group" aria-label="選擇附件">${items.map((item,index)=>`<button type="button" data-media-select="${esc(item.id)}" aria-pressed="${index===0}">${({photo:'照片',clip:'剪報',audio:'錄音'})[item.kind]}</button>`).join('')}</div>` : '';
+    const totals={},seen={};items.forEach(item=>totals[item.kind]=(totals[item.kind]||0)+1);
+    const labels=items.map(item=>{seen[item.kind]=(seen[item.kind]||0)+1;return KIND_LABEL[item.kind]+(totals[item.kind]>1?' '+seen[item.kind]:'');});
+    const selector = items.length > 1 ? `<div class="media-switch" role="group" aria-label="選擇附件">${items.map((item,index)=>`<button type="button" data-media-select="${esc(item.id)}" aria-pressed="${index===0}">${labels[index]}</button>`).join('')}</div>` : '';
     return `<section class="media-section" aria-label="事件附件">${title}${notice}${selector}${items.map((m,i)=>{
-      const key=event.id+'-'+m.id,badge=m.sample?'<span class="sample-badge">示意</span>':'';
-      if(m.kind==='audio')return `<section class="media-item" data-kind="audio" data-media-panel="${esc(m.id)}"${i?' hidden':''}><h4>${esc(m.title)}${badge}</h4><audio id="audio-${key}" class="audio-player" controls preload="none" src="${esc(m.src)}" aria-label="${esc(m.title+(m.sample?'，合成語音示例':''))}"></audio><p class="audio-error" hidden>音檔目前無法載入；仍可閱讀下方逐字稿。</p><label class="audio-speed">播放速度<select data-audio-speed="audio-${key}"><option value="0.75">0.75 倍</option><option value="1" selected>1 倍</option><option value="1.25">1.25 倍</option><option value="1.5">1.5 倍</option></select></label><p class="media-caption">${esc(m.caption||'')}</p><details class="transcript more"><summary>閱讀逐字稿與中文對照</summary><ol>${(m.segments||[]).map((s,i)=>`<li data-audio="audio-${key}" data-segment="${i}" data-start="${s.time}"><button type="button" data-seek="${s.time}" data-player="audio-${key}">${Math.floor(s.time/60)}:${String(Math.floor(s.time%60)).padStart(2,'0')} 跳至此段</button><p>${esc(s.text)}</p>${s.translation?`<p class="translation">${esc(s.translation)}</p>`:''}</li>`).join('')}</ol></details></section>`;
-      return `<figure class="media-item" data-kind="${esc(m.kind)}" data-media-panel="${esc(m.id)}"${i?' hidden':''}><h4>${esc(m.title)}${badge}</h4><button class="image-button" type="button" data-image="${esc(m.id)}" aria-label="放大${esc(m.title)}"><img src="${esc(m.src)}" alt="${esc(m.alt||m.title)}" loading="lazy" width="${m.kind==='photo'?600:640}" height="${m.kind==='photo'?400:480}"></button><figcaption class="media-caption">${esc(m.caption||'')}</figcaption>${m.kind==='clip'?`<details class="more"><summary>閱讀剪報文字說明</summary><p>${esc(m.text||'原件文字待補。')}</p></details>`:''}</figure>`;
+      const key=esc(event.id+'-'+m.id),badge=m.sample?'<span class="sample-badge">示意</span>':'';
+      const open=`data-kind="${esc(m.kind)}" data-media-panel="${esc(m.id)}"${i?' hidden':''}><h4>${esc(m.title)}${badge}</h4>`;
+      const caption=`${m.caption?`<p class="media-caption">${esc(m.caption)}</p>`:''}${m.credit?`<p class="media-caption media-credit">來源與授權：${esc(m.credit)}</p>`:''}`;
+      if(m.kind==='audio')return `<section class="media-item" ${open}<audio id="audio-${key}" class="audio-player" controls preload="none" src="${esc(srcOf(m))}"${m.link?.embed?` data-embed="${esc(m.link.embed)}"`:''} aria-label="${esc(m.title+(m.sample?'，合成語音示例':''))}"></audio><p class="audio-error" hidden>音檔目前無法載入；仍可閱讀下方逐字稿。</p><label class="audio-speed">播放速度<select data-audio-speed="audio-${key}"><option value="0.75">0.75 倍</option><option value="1" selected>1 倍</option><option value="1.25">1.25 倍</option><option value="1.5">1.5 倍</option></select></label>${caption}${transcriptHtml(m,'audio-'+key)}</section>`;
+      if(m.kind==='video'){
+        const player=m.link.embed?frame(m.link.embed,m.title,'video'):`<video id="video-${key}" class="video-player" controls preload="metadata" playsinline src="${esc(m.link.src)}" aria-label="${esc(m.title)}"></video>`;
+        return `<section class="media-item" ${open}${player}${caption}${transcriptHtml(m,m.link.embed?'':'video-'+key)}</section>`;
+      }
+      if(m.kind==='text')return `<article class="media-item media-text" ${open}<div class="media-text-body">${paragraphs(m.text)}</div>${caption}</article>`;
+      const size=m.link?'class="natural"':`width="${m.kind==='photo'?600:640}" height="${m.kind==='photo'?400:480}"`;
+      const clipText=m.kind==='clip'&&(m.text||m.sample)?`<details class="more"><summary>閱讀剪報文字說明</summary>${paragraphs(m.text||'原件文字待補。')}</details>`:'';
+      return `<figure class="media-item" ${open}<button class="image-button" type="button" data-image="${esc(m.id)}" aria-label="放大${esc(m.title)}"><img src="${esc(srcOf(m))}"${m.link?.backup?` data-backup="${esc(m.link.backup)}"`:''} alt="${esc(m.alt||m.title)}" loading="lazy" ${size}></button><figcaption>${caption}</figcaption>${clipText}</figure>`;
     }).join('')}</section>`;
   }
   function eventHtml(e){
@@ -970,11 +1135,21 @@ const ReaderData = (() => {
     el('decadeNav').hidden=!list.length;
     renderDecades();bindAudio();applyPrefs();syncNav();syncQuickFilters();
   }
-  function bindAudio(root=el('timeline')){all('audio',root).forEach(audio=>{
-    audio.addEventListener('play',()=>all('audio').forEach(other=>{if(other!==audio)other.pause();}));
-    audio.addEventListener('error',()=>{const p=audio.parentElement.querySelector('.audio-error');if(p)p.hidden=false;});
-    audio.addEventListener('timeupdate',()=>{const rows=all('[data-audio]',audio.parentElement);rows.forEach((row,i)=>row.classList.toggle('current',audio.currentTime>=Number(row.dataset.start)&&(!rows[i+1]||audio.currentTime<Number(rows[i+1].dataset.start))));});
+  function bindAudio(root=el('timeline')){all('audio,video',root).forEach(audio=>{
+    audio.addEventListener('play',()=>all('audio,video').forEach(other=>{if(other!==audio)other.pause();}));
+    audio.addEventListener('error',()=>{
+      if(!audio.parentElement)return;
+      const p=audio.parentElement.querySelector('.audio-error');
+      // Google Drive sometimes refuses direct playback; its own embedded player still works.
+      if(audio.dataset.embed){
+        const item=audio.parentElement;audio.insertAdjacentHTML('afterend',frame(audio.dataset.embed,audio.getAttribute('aria-label')||'錄音','audio'));
+        item.querySelector('.audio-speed')?.remove();all('[data-seek]',item).forEach(b=>{b.outerHTML=`<span class="transcript-time">${esc(b.textContent.replace(' 跳至此段',''))}</span>`;});
+        if(p){p.textContent='已改用 Google 播放器；調整速度與逐字稿跳轉暫時無法使用。';p.hidden=false;}audio.remove();return;
+      }
+      if(p)p.hidden=false;});
+    audio.addEventListener('timeupdate',()=>{if(!audio.parentElement)return;const rows=all('[data-audio]',audio.parentElement);rows.forEach((row,i)=>row.classList.toggle('current',audio.currentTime>=Number(row.dataset.start)&&(!rows[i+1]||audio.currentTime<Number(rows[i+1].dataset.start))));});
   });}
+  document.addEventListener('error',e=>{const img=e.target;if(img instanceof HTMLImageElement&&img.dataset.backup){const next=img.dataset.backup;delete img.dataset.backup;img.src=next;}},true);
   el('timeline').addEventListener('toggle',e=>{if(!e.target.matches('.event-details'))return;const d=e.target;if(d.open)state.open.add(d.dataset.ev);else{state.open.delete(d.dataset.ev);pauseAudio(d);}queueSave();},true);
   function syncNav(){const v=el('timelineViewport');el('earlier').disabled=!lastList.length||v.scrollLeft<=2;el('later').disabled=!lastList.length||v.scrollLeft>=v.scrollWidth-v.clientWidth-2;syncPosition();}
   function move(direction){
@@ -1076,7 +1251,7 @@ const ReaderData = (() => {
     const b=e.target.closest('button');if(!b)return;
     if(b.dataset.action==='edit')return edit();
     if(b.dataset.action==='about'||b.id==='aboutButton'){el('aboutDialog').showModal();return;}
-    if(b.dataset.image){el('imageCanvas').classList.remove('zoomed');el('imageZoom').textContent='放大圖片';el('imageZoom').setAttribute('aria-pressed','false');const m=READER_MEDIA.items.find(m=>m.id===b.dataset.image);if(!m)return;el('imageTitle').textContent=m.title+(m.sample?'（示意）':'');el('fullImage').src=m.src;el('fullImage').alt=m.alt||m.title;el('imageCaption').textContent=m.caption||'';el('imageDialog').showModal();return;}
+    if(b.dataset.image){el('imageCanvas').classList.remove('zoomed');el('imageZoom').textContent='放大圖片';el('imageZoom').setAttribute('aria-pressed','false');const m=findMedia(b.dataset.image);if(!m)return;el('imageTitle').textContent=m.title+(m.sample?'（示意）':'');el('fullImage').src=b.querySelector('img')?.currentSrc||srcOf(m);el('fullImage').alt=m.alt||m.title;el('imageCaption').textContent=m.caption||'';el('imageDialog').showModal();return;}
     if(b.dataset.player){const a=el(b.dataset.player);if(!a)return;const seek=()=>{a.currentTime=Math.min(Number(b.dataset.seek),Number.isFinite(a.duration)?Math.max(0,a.duration-.1):Number(b.dataset.seek));a.play().catch(()=>say('請使用播放器的播放按鈕。'));};if(a.readyState>=1)seek();else{a.addEventListener('loadedmetadata',seek,{once:true});a.load();}}
   });
   document.addEventListener('change',e=>{if(e.target.dataset.audioSpeed){const a=el(e.target.dataset.audioSpeed);if(a)a.playbackRate=Number(e.target.value);}});
@@ -1294,7 +1469,7 @@ const ReaderData = (() => {
       ];
     }else{
       tourSteps=[
-        {target:el('readAll'),title:'直接開始閱讀',text:'按「閱讀全部事件」可開啟全部 50 件精選事件。進入年表後，仍可隨時搜尋或篩選。'},
+        {target:el('readAll'),title:'直接開始閱讀',text:`按「閱讀全部事件」可開啟全部 ${EV.length} 件精選事件。進入年表後，仍可隨時搜尋或篩選。`},
         {target:el('decadeOptions'),title:'選擇年代',text:'可複選想讀的年代；不勾選代表全部年代。'},
         {target:el('typeOptions'),title:'選擇事件類型',text:'可依類型挑選事件，顏色和文字會一起標示類別。選好後按「開始閱讀」。'}
       ];
@@ -1327,11 +1502,23 @@ const ReaderData = (() => {
   window.addEventListener('scroll',()=>{if(!tour.open&&state.mode==='read'&&state.view==='list'){capturePosition();syncPosition();queueSave();}},{passive:true});
   window.addEventListener('pagehide',()=>{if(state.hasRead){capturePosition();try{localStorage.setItem(progressKey,JSON.stringify(snapshot()));}catch{}}});
   window.addEventListener('popstate',restoreRoute);
+  all('[data-event-count]').forEach(n=>n.textContent=EV.length);
+  el('aboutCounts').textContent=`精選 ${EV.length} 件事件：`+[['重大事件',EV.filter(e=>e.type==='event').length],...['news','lit','people'].map(t=>[TRACKS[t].name,EV.filter(e=>e.track===t).length])].filter(x=>x[1]).map(x=>`${x[1]} 件${x[0]}`).join('、')+'。事件不會因篩選而增加。';
   el('aboutSamples').innerHTML=mediaHtml({id:'about'},{samples:true});
   bindAudio(el('aboutSamples'));
   all('dialog').forEach(dialog=>dialog.addEventListener('close',()=>pauseAudio(dialog)));
   syncPicker();applyPrefs();updateResume();restoreRoute();
 
 })();
+
+}
+SheetData.load(SITE_CONFIG, SHEET_SNAPSHOT, NEWS.length).then(data => {
+  try { boot(data); document.documentElement.classList.remove('sheet-loading'); }
+  catch (error) {
+    // Unexpected sheet content must never leave visitors with a blank page.
+    if (data.origin !== 'snapshot' && SheetData.distrust()) location.reload();
+    else { document.documentElement.classList.remove('sheet-loading'); throw error; }
+  }
+});
 
 </script></body></html>
