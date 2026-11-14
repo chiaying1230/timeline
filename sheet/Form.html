@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root{--ink:#22201c;--muted:#6b665d;--line:#d8d2c6;--paper:#fbf9f5;--accent:#7a3b2e;--ok:#2f6b4a;--bad:#a12c2c}
+  *{box-sizing:border-box}
+  body{margin:0;padding:4px 4px 20px;font:15px/1.6 "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;color:var(--ink);background:#fff}
+  h2{font-size:15px;margin:22px 0 6px;display:flex;gap:8px;align-items:baseline}
+  h2 .step{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;flex:none;transform:translateY(-1px)}
+  h2 small,label small{font-weight:400;color:var(--muted);font-size:12.5px}
+  label{display:block;font-weight:600;margin:14px 0 4px}
+  input[type=text],input[type=url],input[type=search],textarea,select{width:100%;font:inherit;color:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff}
+  input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+  textarea{min-height:88px;resize:vertical}
+  select[size]{padding:4px;margin-top:6px}
+  select[size] option{padding:5px 6px;border-radius:4px}
+  .kinds{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .kinds label{margin:0;font-weight:500;text-align:center;border:1px solid var(--line);border-radius:6px;padding:8px 2px;cursor:pointer}
+  .kinds input{position:absolute;opacity:0}
+  .kinds label:has(input:checked){background:var(--ink);color:#fff;border-color:var(--ink)}
+  .kinds label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:1px}
+  .hint{font-size:12.5px;color:var(--muted);margin:4px 0 0}
+  .file-box{border:1px dashed var(--line);border-radius:6px;padding:12px;background:var(--paper)}
+  .file-box input[type=file]{font:inherit;width:100%}
+  details{margin-top:8px}
+  summary{cursor:pointer;font-size:13px;color:var(--muted)}
+  .actions{position:sticky;bottom:0;background:#fff;padding:14px 0 0;margin-top:20px;border-top:1px solid var(--line);display:flex;gap:10px;align-items:center}
+  button{font:inherit;padding:9px 18px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  button:disabled{opacity:.55;cursor:default}
+  #status{font-size:13.5px;flex:1}
+  #status.bad{color:var(--bad)} #status.ok{color:var(--ok)}
+  #done{text-align:center;padding:60px 20px}
+  #done h3{color:var(--ok);font-size:18px;margin:0 0 8px}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<form id="form" novalidate>
+  <h2><span class="step">1</span>這個附件屬於哪一件事件？</h2>
+  <input type="search" id="eventSearch" placeholder="輸入年份或關鍵字搜尋，例如 1990 或 特殊教育" aria-label="搜尋事件">
+  <select id="eventId" size="6" aria-label="事件" required><option disabled>讀取事件中…</option></select>
+
+  <h2><span class="step">2</span>種類</h2>
+  <div class="kinds" id="kinds" role="radiogroup" aria-label="種類"></div>
+
+  <h2><span class="step">3</span>內容</h2>
+  <label for="title">標題</label>
+  <input type="text" id="title" maxlength="120" placeholder="例：家長會理事長口述訪談" required>
+
+  <div data-for="照片 剪報 錄音">
+    <label for="file">檔案 <small id="fileHint"></small></label>
+    <div class="file-box"><input type="file" id="file"></div>
+    <details id="linkInstead"><summary>檔案太大，或已經放在雲端硬碟？改貼連結</summary>
+      <input type="url" id="fileLink" placeholder="https://drive.google.com/file/d/…" aria-label="檔案連結">
+      <p class="hint">雲端硬碟的檔案請先設成「知道連結的任何人都可以檢視」。</p>
+    </details>
+  </div>
+
+  <div data-for="影片">
+    <label for="videoLink">影片連結</label>
+    <input type="url" id="videoLink" placeholder="https://youtu.be/…">
+    <p class="hint">先把影片上傳到 YouTube（可設為「不公開」），再把連結貼在這裡。也可以貼雲端硬碟的影片連結。</p>
+  </div>
+
+  <div data-for="文字">
+    <label for="text">文字內容</label>
+    <textarea id="text" style="min-height:170px" placeholder="直接輸入或貼上要展出的文字。換行會保留。"></textarea>
+  </div>
+  <div data-for="剪報">
+    <label for="clipText">剪報內文 <small>可不填</small></label>
+    <textarea id="clipText" placeholder="經授權的剪報文字，讓看不清楚圖片的人也能閱讀。"></textarea>
+  </div>
+
+  <label for="caption">圖說／說明 <small>可不填，顯示在附件下方</small></label>
+  <input type="text" id="caption" maxlength="300">
+
+  <div data-for="照片 剪報">
+    <label for="alt">替代文字 <small>描述畫面，給使用螢幕報讀軟體的讀者</small></label>
+    <input type="text" id="alt" maxlength="300" placeholder="例：黑白照片，十多位學生坐在教室裡看向黑板。">
+  </div>
+
+  <div data-for="錄音 影片">
+    <label for="transcript">逐字稿 <small>可不填</small></label>
+    <textarea id="transcript" placeholder="0:00 第一段話&#10;0:35 第二段話&#10;1:20 原文 | 中文對照"></textarea>
+    <p class="hint">一行一段，開頭寫時間（分:秒），讀者就能點選跳到那一段。沒有時間也可以，只貼文字即可。</p>
+  </div>
+
+  <label for="credit">來源與授權 <small>可不填</small></label>
+  <input type="text" id="credit" maxlength="200" placeholder="例：王小明提供，已取得公開展示同意">
+
+  <div class="actions">
+    <button type="submit" class="primary" id="submit">加入年表</button>
+    <span id="status" role="status" aria-live="polite"></span>
+  </div>
+</form>
+
+<div id="done" hidden>
+  <h3>已加入年表</h3>
+  <p id="doneText"></p>
+  <p class="hint">重新整理年表網站，就會出現在這件事件底下。</p>
+  <p style="margin-top:24px"><button type="button" class="primary" id="again">再新增一筆</button> <button type="button" id="close">關閉</button></p>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var events = [], maxBytes = 30 * 1024 * 1024, busy = false;
+  var ACCEPT = {'照片': 'image/*', '剪報': 'image/*', '錄音': 'audio/*,.mp3,.m4a,.wav'};
+  var FILE_HINT = {'照片': 'JPG 或 PNG', '剪報': 'JPG 或 PNG', '錄音': '建議 MP3，30MB 以內'};
+
+  function status(text, kind) { $('status').textContent = text; $('status').className = kind || ''; }
+  function kind() { var c = document.querySelector('input[name=kind]:checked'); return c ? c.value : ''; }
+
+  function showKind() {
+    var k = kind();
+    document.querySelectorAll('[data-for]').forEach(function (box) { box.hidden = box.dataset.for.split(' ').indexOf(k) < 0; });
+    $('file').accept = ACCEPT[k] || '';
+    $('fileHint').textContent = FILE_HINT[k] || '';
+  }
+
+  function renderEvents() {
+    var words = $('eventSearch').value.trim().toLowerCase().split(/\s+/).filter(Boolean), chosen = $('eventId').value;
+    var list = events.filter(function (e) { var t = e.label.toLowerCase(); return words.every(function (w) { return t.indexOf(w) >= 0; }); });
+    $('eventId').innerHTML = '';
+    if (!list.length) { var none = new Option(events.length ? '沒有符合的事件' : '「事件」分頁還沒有資料', ''); none.disabled = true; $('eventId').add(none); return; }
+    list.forEach(function (e) { $('eventId').add(new Option(e.label + (e.hidden ? '（目前隱藏）' : ''), e.id, false, e.id === chosen)); });
+  }
+
+  function readFile(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () { resolve({name: file.name, type: file.type, data: String(reader.result).split(',')[1] || ''}); };
+      reader.onerror = function () { reject(new Error('讀取檔案失敗，請再選一次。')); };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function collect() {
+    var k = kind(), file = $('file').files[0];
+    var form = {eventId: $('eventId').value, kind: k, title: $('title').value.trim(), caption: $('caption').value.trim(), credit: $('credit').value.trim(),
+      alt: '', text: '', transcript: '', link: ''};
+    if (!form.eventId) return {error: '請先選擇事件。', focus: 'eventSearch'};
+    if (!k) return {error: '請選擇種類。', focus: 'kinds'};
+    if (!form.title) return {error: '請填寫標題。', focus: 'title'};
+    if (k === '文字') { form.text = $('text').value.trim(); if (!form.text) return {error: '請填寫文字內容。', focus: 'text'}; }
+    else if (k === '影片') { form.link = $('videoLink').value.trim(); if (!form.link) return {error: '請貼上影片連結。', focus: 'videoLink'}; }
+    else {
+      form.link = $('fileLink').value.trim();
+      if (!file && !form.link) return {error: '請選擇檔案，或改貼連結。', focus: 'file'};
+      if (file && file.size > maxBytes) { $('linkInstead').open = true; return {error: '這個檔案超過 30MB。請先上傳到雲端硬碟，再改貼連結。', focus: 'fileLink'}; }
+      if (file) form.link = '';
+    }
+    if (form.link && !/^https:\/\//i.test(form.link)) return {error: '連結請以 https:// 開頭。', focus: k === '影片' ? 'videoLink' : 'fileLink'};
+    if (k === '照片' || k === '剪報') form.alt = $('alt').value.trim();
+    if (k === '剪報') form.text = $('clipText').value.trim();
+    if (k === '錄音' || k === '影片') form.transcript = $('transcript').value.trim();
+    return {form: form, file: k === '文字' || k === '影片' || form.link ? null : file};
+  }
+
+  function setBusy(on) { busy = on; $('submit').disabled = on; }
+
+  $('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (busy) return;
+    var got = collect();
+    if (got.error) { status(got.error, 'bad'); var target = $(got.focus); if (target && target.focus) target.focus(); return; }
+    setBusy(true);
+    status(got.file ? '上傳中…大檔案可能需要一兩分鐘，請不要關閉視窗。' : '儲存中…');
+    (got.file ? readFile(got.file) : Promise.resolve(null)).then(function (file) {
+      if (file) got.form.file = file;
+      google.script.run
+        .withSuccessHandler(function (result) {
+          setBusy(false); status('');
+          var label = (events.filter(function (x) { return x.id === got.form.eventId; })[0] || {}).label || got.form.eventId;
+          $('doneText').textContent = '「' + got.form.title + '」（' + got.form.kind + '）已加到「' + label + '」，編號 ' + result.id + '，在「附件」分頁第 ' + result.row + ' 列。' +
+            (result.shared === false ? ' 注意：檔案無法自動設為公開，請到雲端硬碟把它設成「知道連結的任何人都可以檢視」。' : '');
+          $('form').hidden = true; $('done').hidden = false; $('again').focus();
+        })
+        .withFailureHandler(function (error) { setBusy(false); status('沒有成功：' + (error && error.message ? error.message : error), 'bad'); })
+        .addAttachment(got.form);
+    }).catch(function (error) { setBusy(false); status(error.message, 'bad'); });
+  });
+
+  $('again').addEventListener('click', function () {
+    // Keep the chosen event and kind: several attachments usually go to the same event.
+    ['title', 'fileLink', 'videoLink', 'text', 'clipText', 'caption', 'alt', 'transcript', 'credit'].forEach(function (id) { $(id).value = ''; });
+    $('file').value = ''; $('done').hidden = true; $('form').hidden = false; $('title').focus();
+  });
+  $('close').addEventListener('click', function () { google.script.host.close(); });
+  $('eventSearch').addEventListener('input', renderEvents);
+  $('form').addEventListener('change', function () { if (!busy && $('status').className === 'bad') status(''); });
+
+  google.script.run
+    .withSuccessHandler(function (data) {
+      events = data.events; maxBytes = data.maxBytes || maxBytes;
+      $('kinds').innerHTML = data.kinds.map(function (k) { return '<label><input type="radio" name="kind" value="' + k + '">' + k + '</label>'; }).join('');
+      $('kinds').addEventListener('change', showKind);
+      renderEvents(); showKind();
+    })
+    .withFailureHandler(function (error) { status('讀取事件失敗：' + (error && error.message ? error.message : error), 'bad'); })
+    .getFormData();
+  showKind();
+})();
+</script>
+</body>
+</html>

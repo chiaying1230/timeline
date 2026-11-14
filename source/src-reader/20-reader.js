@@ -9,7 +9,7 @@
   if('scrollRestoration' in history)history.scrollRestoration='manual';
   const modes={select:'selection',read:'reader',news:'newsLibrary'};
   const say=text=>{el('readerStatus').textContent=text;};
-  function pauseAudio(root=document){all('audio',root).forEach(a=>a.pause());}
+  function pauseAudio(root=document){all('audio,video',root).forEach(a=>a.pause());all('.media-frame iframe',root).forEach(f=>{f.src=f.src;});}
   function savePrefs(){try{localStorage.setItem('history-timeline.preferences.v1',JSON.stringify({easy:state.easy,large:state.large}));}catch{}}
   function applyPrefs(){document.documentElement.classList.toggle('large-text',state.large);all('.easy-section').forEach(n=>n.hidden=!state.easy);all('.full-description').forEach(n=>n.open=!state.easy);el('easyToggle').checked=state.easy;el('largeToggle').checked=state.large;}
   function capturePosition(){
@@ -77,16 +77,42 @@
   }
   el('filterForm').addEventListener('submit',e=>{e.preventDefault();if(state.draft.types.length)commit(state.draft);});
   el('readAll').addEventListener('click',()=>commit(D.defaults()));el('cancelFilters').addEventListener('click',()=>{state.draft=D.clone(state.applied);mode('read');});
-  function mediaFor(event){return READER_MEDIA.items.filter(m=>!m.sample&&(m.events?.includes(event.id)||(m.allNews&&event.track==='news')));}
+  const KIND_LABEL={photo:'照片',clip:'剪報',audio:'錄音',video:'影片',text:'文字'};
+  function mediaFor(event){return SHEET.media.filter(m=>m.events.includes(event.id));}
+  const findMedia=id=>SHEET.media.find(m=>m.id===id)||READER_MEDIA.items.find(m=>m.id===id);
+  const srcOf=m=>m.link?m.link.src:m.src;
+  const paragraphs=t=>String(t||'').split('\n').filter(Boolean).map(x=>`<p>${esc(x)}</p>`).join('');
+  const clock=t=>(t>=3600?Math.floor(t/3600)+':'+String(Math.floor(t%3600/60)).padStart(2,'0'):Math.floor(t/60))+':'+String(Math.floor(t%60)).padStart(2,'0');
+  const frame=(src,title,kind)=>`<div class="media-frame" data-frame="${kind}"><iframe src="${esc(src)}" title="${esc(title)}" loading="lazy" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`;
+  // player: id of an <audio>/<video> element that timed segments can seek; empty when playback is an embedded frame.
+  function transcriptHtml(m,player){
+    const segments=m.segments||[];if(!segments.length)return '';
+    const translated=segments.some(s=>s.translation);
+    return `<details class="transcript more"><summary>${translated?'閱讀逐字稿與中文對照':'閱讀逐字稿'}</summary><ol>${segments.map((s,i)=>{
+      const timed=s.time!=null;
+      const head=timed?(player?`<button type="button" data-seek="${s.time}" data-player="${player}">${clock(s.time)} 跳至此段</button>`:`<span class="transcript-time">${clock(s.time)}</span>`):'';
+      return `<li${timed&&player?` data-audio="${player}" data-segment="${i}" data-start="${s.time}"`:''}>${head}${s.text?`<p>${esc(s.text)}</p>`:''}${s.translation?`<p class="translation">${esc(s.translation)}</p>`:''}</li>`;}).join('')}</ol></details>`;
+  }
   function mediaHtml(event,{samples=false}={}){
     const items=samples?READER_MEDIA.items.filter(item=>item.sample):mediaFor(event);if(!items.length)return '';
     const title = '<h3>事件附件</h3>';
     const notice = items.some(item=>item.sample) ? '<p class="sample-notice">以下示例僅呈現附件樣式，與歷史事件沒有史料關聯。</p>' : '';
-    const selector = items.length > 1 ? `<div class="media-switch" role="group" aria-label="選擇附件">${items.map((item,index)=>`<button type="button" data-media-select="${esc(item.id)}" aria-pressed="${index===0}">${({photo:'照片',clip:'剪報',audio:'錄音'})[item.kind]}</button>`).join('')}</div>` : '';
+    const totals={},seen={};items.forEach(item=>totals[item.kind]=(totals[item.kind]||0)+1);
+    const labels=items.map(item=>{seen[item.kind]=(seen[item.kind]||0)+1;return KIND_LABEL[item.kind]+(totals[item.kind]>1?' '+seen[item.kind]:'');});
+    const selector = items.length > 1 ? `<div class="media-switch" role="group" aria-label="選擇附件">${items.map((item,index)=>`<button type="button" data-media-select="${esc(item.id)}" aria-pressed="${index===0}">${labels[index]}</button>`).join('')}</div>` : '';
     return `<section class="media-section" aria-label="事件附件">${title}${notice}${selector}${items.map((m,i)=>{
-      const key=event.id+'-'+m.id,badge=m.sample?'<span class="sample-badge">示意</span>':'';
-      if(m.kind==='audio')return `<section class="media-item" data-kind="audio" data-media-panel="${esc(m.id)}"${i?' hidden':''}><h4>${esc(m.title)}${badge}</h4><audio id="audio-${key}" class="audio-player" controls preload="none" src="${esc(m.src)}" aria-label="${esc(m.title+(m.sample?'，合成語音示例':''))}"></audio><p class="audio-error" hidden>音檔目前無法載入；仍可閱讀下方逐字稿。</p><label class="audio-speed">播放速度<select data-audio-speed="audio-${key}"><option value="0.75">0.75 倍</option><option value="1" selected>1 倍</option><option value="1.25">1.25 倍</option><option value="1.5">1.5 倍</option></select></label><p class="media-caption">${esc(m.caption||'')}</p><details class="transcript more"><summary>閱讀逐字稿與中文對照</summary><ol>${(m.segments||[]).map((s,i)=>`<li data-audio="audio-${key}" data-segment="${i}" data-start="${s.time}"><button type="button" data-seek="${s.time}" data-player="audio-${key}">${Math.floor(s.time/60)}:${String(Math.floor(s.time%60)).padStart(2,'0')} 跳至此段</button><p>${esc(s.text)}</p>${s.translation?`<p class="translation">${esc(s.translation)}</p>`:''}</li>`).join('')}</ol></details></section>`;
-      return `<figure class="media-item" data-kind="${esc(m.kind)}" data-media-panel="${esc(m.id)}"${i?' hidden':''}><h4>${esc(m.title)}${badge}</h4><button class="image-button" type="button" data-image="${esc(m.id)}" aria-label="放大${esc(m.title)}"><img src="${esc(m.src)}" alt="${esc(m.alt||m.title)}" loading="lazy" width="${m.kind==='photo'?600:640}" height="${m.kind==='photo'?400:480}"></button><figcaption class="media-caption">${esc(m.caption||'')}</figcaption>${m.kind==='clip'?`<details class="more"><summary>閱讀剪報文字說明</summary><p>${esc(m.text||'原件文字待補。')}</p></details>`:''}</figure>`;
+      const key=esc(event.id+'-'+m.id),badge=m.sample?'<span class="sample-badge">示意</span>':'';
+      const open=`data-kind="${esc(m.kind)}" data-media-panel="${esc(m.id)}"${i?' hidden':''}><h4>${esc(m.title)}${badge}</h4>`;
+      const caption=`${m.caption?`<p class="media-caption">${esc(m.caption)}</p>`:''}${m.credit?`<p class="media-caption media-credit">來源與授權：${esc(m.credit)}</p>`:''}`;
+      if(m.kind==='audio')return `<section class="media-item" ${open}<audio id="audio-${key}" class="audio-player" controls preload="none" src="${esc(srcOf(m))}"${m.link?.embed?` data-embed="${esc(m.link.embed)}"`:''} aria-label="${esc(m.title+(m.sample?'，合成語音示例':''))}"></audio><p class="audio-error" hidden>音檔目前無法載入；仍可閱讀下方逐字稿。</p><label class="audio-speed">播放速度<select data-audio-speed="audio-${key}"><option value="0.75">0.75 倍</option><option value="1" selected>1 倍</option><option value="1.25">1.25 倍</option><option value="1.5">1.5 倍</option></select></label>${caption}${transcriptHtml(m,'audio-'+key)}</section>`;
+      if(m.kind==='video'){
+        const player=m.link.embed?frame(m.link.embed,m.title,'video'):`<video id="video-${key}" class="video-player" controls preload="metadata" playsinline src="${esc(m.link.src)}" aria-label="${esc(m.title)}"></video>`;
+        return `<section class="media-item" ${open}${player}${caption}${transcriptHtml(m,m.link.embed?'':'video-'+key)}</section>`;
+      }
+      if(m.kind==='text')return `<article class="media-item media-text" ${open}<div class="media-text-body">${paragraphs(m.text)}</div>${caption}</article>`;
+      const size=m.link?'class="natural"':`width="${m.kind==='photo'?600:640}" height="${m.kind==='photo'?400:480}"`;
+      const clipText=m.kind==='clip'&&(m.text||m.sample)?`<details class="more"><summary>閱讀剪報文字說明</summary>${paragraphs(m.text||'原件文字待補。')}</details>`:'';
+      return `<figure class="media-item" ${open}<button class="image-button" type="button" data-image="${esc(m.id)}" aria-label="放大${esc(m.title)}"><img src="${esc(srcOf(m))}"${m.link?.backup?` data-backup="${esc(m.link.backup)}"`:''} alt="${esc(m.alt||m.title)}" loading="lazy" ${size}></button><figcaption>${caption}</figcaption>${clipText}</figure>`;
     }).join('')}</section>`;
   }
   function eventHtml(e){
@@ -103,11 +129,21 @@
     el('decadeNav').hidden=!list.length;
     renderDecades();bindAudio();applyPrefs();syncNav();syncQuickFilters();
   }
-  function bindAudio(root=el('timeline')){all('audio',root).forEach(audio=>{
-    audio.addEventListener('play',()=>all('audio').forEach(other=>{if(other!==audio)other.pause();}));
-    audio.addEventListener('error',()=>{const p=audio.parentElement.querySelector('.audio-error');if(p)p.hidden=false;});
-    audio.addEventListener('timeupdate',()=>{const rows=all('[data-audio]',audio.parentElement);rows.forEach((row,i)=>row.classList.toggle('current',audio.currentTime>=Number(row.dataset.start)&&(!rows[i+1]||audio.currentTime<Number(rows[i+1].dataset.start))));});
+  function bindAudio(root=el('timeline')){all('audio,video',root).forEach(audio=>{
+    audio.addEventListener('play',()=>all('audio,video').forEach(other=>{if(other!==audio)other.pause();}));
+    audio.addEventListener('error',()=>{
+      if(!audio.parentElement)return;
+      const p=audio.parentElement.querySelector('.audio-error');
+      // Google Drive sometimes refuses direct playback; its own embedded player still works.
+      if(audio.dataset.embed){
+        const item=audio.parentElement;audio.insertAdjacentHTML('afterend',frame(audio.dataset.embed,audio.getAttribute('aria-label')||'錄音','audio'));
+        item.querySelector('.audio-speed')?.remove();all('[data-seek]',item).forEach(b=>{b.outerHTML=`<span class="transcript-time">${esc(b.textContent.replace(' 跳至此段',''))}</span>`;});
+        if(p){p.textContent='已改用 Google 播放器；調整速度與逐字稿跳轉暫時無法使用。';p.hidden=false;}audio.remove();return;
+      }
+      if(p)p.hidden=false;});
+    audio.addEventListener('timeupdate',()=>{if(!audio.parentElement)return;const rows=all('[data-audio]',audio.parentElement);rows.forEach((row,i)=>row.classList.toggle('current',audio.currentTime>=Number(row.dataset.start)&&(!rows[i+1]||audio.currentTime<Number(rows[i+1].dataset.start))));});
   });}
+  document.addEventListener('error',e=>{const img=e.target;if(img instanceof HTMLImageElement&&img.dataset.backup){const next=img.dataset.backup;delete img.dataset.backup;img.src=next;}},true);
   el('timeline').addEventListener('toggle',e=>{if(!e.target.matches('.event-details'))return;const d=e.target;if(d.open)state.open.add(d.dataset.ev);else{state.open.delete(d.dataset.ev);pauseAudio(d);}queueSave();},true);
   function syncNav(){const v=el('timelineViewport');el('earlier').disabled=!lastList.length||v.scrollLeft<=2;el('later').disabled=!lastList.length||v.scrollLeft>=v.scrollWidth-v.clientWidth-2;syncPosition();}
   function move(direction){
@@ -209,7 +245,7 @@
     const b=e.target.closest('button');if(!b)return;
     if(b.dataset.action==='edit')return edit();
     if(b.dataset.action==='about'||b.id==='aboutButton'){el('aboutDialog').showModal();return;}
-    if(b.dataset.image){el('imageCanvas').classList.remove('zoomed');el('imageZoom').textContent='放大圖片';el('imageZoom').setAttribute('aria-pressed','false');const m=READER_MEDIA.items.find(m=>m.id===b.dataset.image);if(!m)return;el('imageTitle').textContent=m.title+(m.sample?'（示意）':'');el('fullImage').src=m.src;el('fullImage').alt=m.alt||m.title;el('imageCaption').textContent=m.caption||'';el('imageDialog').showModal();return;}
+    if(b.dataset.image){el('imageCanvas').classList.remove('zoomed');el('imageZoom').textContent='放大圖片';el('imageZoom').setAttribute('aria-pressed','false');const m=findMedia(b.dataset.image);if(!m)return;el('imageTitle').textContent=m.title+(m.sample?'（示意）':'');el('fullImage').src=b.querySelector('img')?.currentSrc||srcOf(m);el('fullImage').alt=m.alt||m.title;el('imageCaption').textContent=m.caption||'';el('imageDialog').showModal();return;}
     if(b.dataset.player){const a=el(b.dataset.player);if(!a)return;const seek=()=>{a.currentTime=Math.min(Number(b.dataset.seek),Number.isFinite(a.duration)?Math.max(0,a.duration-.1):Number(b.dataset.seek));a.play().catch(()=>say('請使用播放器的播放按鈕。'));};if(a.readyState>=1)seek();else{a.addEventListener('loadedmetadata',seek,{once:true});a.load();}}
   });
   document.addEventListener('change',e=>{if(e.target.dataset.audioSpeed){const a=el(e.target.dataset.audioSpeed);if(a)a.playbackRate=Number(e.target.value);}});
@@ -427,7 +463,7 @@
       ];
     }else{
       tourSteps=[
-        {target:el('readAll'),title:'直接開始閱讀',text:'按「閱讀全部事件」可開啟全部 50 件精選事件。進入年表後，仍可隨時搜尋或篩選。'},
+        {target:el('readAll'),title:'直接開始閱讀',text:`按「閱讀全部事件」可開啟全部 ${EV.length} 件精選事件。進入年表後，仍可隨時搜尋或篩選。`},
         {target:el('decadeOptions'),title:'選擇年代',text:'可複選想讀的年代；不勾選代表全部年代。'},
         {target:el('typeOptions'),title:'選擇事件類型',text:'可依類型挑選事件，顏色和文字會一起標示類別。選好後按「開始閱讀」。'}
       ];
@@ -460,6 +496,8 @@
   window.addEventListener('scroll',()=>{if(!tour.open&&state.mode==='read'&&state.view==='list'){capturePosition();syncPosition();queueSave();}},{passive:true});
   window.addEventListener('pagehide',()=>{if(state.hasRead){capturePosition();try{localStorage.setItem(progressKey,JSON.stringify(snapshot()));}catch{}}});
   window.addEventListener('popstate',restoreRoute);
+  all('[data-event-count]').forEach(n=>n.textContent=EV.length);
+  el('aboutCounts').textContent=`精選 ${EV.length} 件事件：`+[['重大事件',EV.filter(e=>e.type==='event').length],...['news','lit','people'].map(t=>[TRACKS[t].name,EV.filter(e=>e.track===t).length])].filter(x=>x[1]).map(x=>`${x[1]} 件${x[0]}`).join('、')+'。事件不會因篩選而增加。';
   el('aboutSamples').innerHTML=mediaHtml({id:'about'},{samples:true});
   bindAudio(el('aboutSamples'));
   all('dialog').forEach(dialog=>dialog.addEventListener('close',()=>pauseAudio(dialog)));
