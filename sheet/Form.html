@@ -12,14 +12,15 @@
   h2 .step{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;flex:none;transform:translateY(-1px)}
   h2 small,label small{font-weight:400;color:var(--muted);font-size:12.5px}
   label{display:block;font-weight:600;margin:14px 0 4px}
-  input[type=text],input[type=url],input[type=search],textarea,select{width:100%;font:inherit;color:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff}
+  input[type=text],input[type=password],input[type=url],input[type=search],textarea,select{width:100%;font:inherit;color:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff}
   input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
   textarea{min-height:88px;resize:vertical}
   select[size]{padding:4px;margin-top:6px}
   select[size] option{padding:5px 6px;border-radius:4px}
   .kinds{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
   .kinds label{margin:0;font-weight:500;text-align:center;border:1px solid var(--line);border-radius:6px;padding:8px 2px;cursor:pointer}
-  .kinds input{position:absolute;opacity:0}
+  .kinds label{position:relative}
+  .kinds input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
   .kinds label:has(input:checked){background:var(--ink);color:#fff;border-color:var(--ink)}
   .kinds label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:1px}
   .hint{font-size:12.5px;color:var(--muted);margin:4px 0 0}
@@ -31,14 +32,63 @@
   button{font:inherit;padding:9px 18px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer}
   button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
   button:disabled{opacity:.55;cursor:default}
-  #status{font-size:13.5px;flex:1}
-  #status.bad{color:var(--bad)} #status.ok{color:var(--ok)}
+  #status,#evStatus{font-size:13.5px;flex:1}
+  #status.bad,#evStatus.bad{color:var(--bad)}
   #done{text-align:center;padding:60px 20px}
   #done h3{color:var(--ok);font-size:18px;margin:0 0 8px}
+  .modes{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:6px 0 4px}
+  .modes button{border:0;border-radius:0;padding:10px;background:#fff}
+  .modes button[aria-pressed=true]{background:var(--ink);color:#fff;font-weight:600}
+  .who{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:2px 12px 12px;margin-top:12px}
+  .who summary{padding:10px 0 0;font-size:13.5px;color:var(--ink)}
+  .who .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .who label{margin-top:10px}
+  body.web{max-width:620px;margin:0 auto;padding:16px 16px 28px}
+  body.web h1{font-size:19px;margin:4px 0 2px}
+  h1{display:none} body.web h1{display:block}
+  @media (max-width:420px){.who .pair{grid-template-columns:1fr}.kinds{grid-template-columns:repeat(3,1fr)}}
   [hidden]{display:none!important}
 </style>
 </head>
 <body>
+<h1>年表：新增內容</h1>
+<div class="modes" role="group" aria-label="要新增什麼">
+  <button type="button" data-mode="media" aria-pressed="true">新增附件</button>
+  <button type="button" data-mode="event" aria-pressed="false">新增事件</button>
+</div>
+<details class="who" id="who" open>
+  <summary id="whoSummary">通關密語與填寫人</summary>
+  <div class="pair">
+    <div><label for="passcode">通關密語</label><input type="password" id="passcode" autocomplete="off"></div>
+    <div><label for="author">填寫人 <small>可不填</small></label><input type="text" id="author" maxlength="40" placeholder="你的名字"></div>
+  </div>
+  <p class="hint">這台裝置會記住，下次不必再輸入。</p>
+</details>
+
+<form id="eventForm" novalidate hidden>
+  <h2><span class="step">1</span>事件的類型與日期</h2>
+  <label for="evTrack">類型</label>
+  <select id="evTrack"></select>
+  <label for="evDate">日期</label>
+  <input type="text" id="evDate" inputmode="numeric" placeholder="1984-12-17、1984-12 或 1984">
+  <p class="hint">只知道年份就只寫年份。</p>
+
+  <h2><span class="step">2</span>內容</h2>
+  <label for="evTitle">標題</label>
+  <input type="text" id="evTitle" maxlength="80" placeholder="例：特殊教育法公布">
+  <label for="evSummary">完整說明</label>
+  <textarea id="evSummary" style="min-height:120px" placeholder="這件事的經過與意義。"></textarea>
+  <label for="evEasy">易讀介紹 <small>可不填；短句、常用詞，一行一句</small></label>
+  <textarea id="evEasy" placeholder="1984 年，政府公布一部新的法律。&#10;這部法律保障孩子上學的權利。"></textarea>
+  <label for="evSource">資料來源 <small>可不填</small></label>
+  <input type="text" id="evSource" maxlength="200" placeholder="例：教育部公報，1984-12-17">
+
+  <div class="actions">
+    <button type="submit" class="primary" id="evSubmit">加入年表</button>
+    <span id="evStatus" role="status" aria-live="polite"></span>
+  </div>
+</form>
+
 <form id="form" novalidate>
   <h2><span class="step">1</span>這個附件屬於哪一件事件？</h2>
   <input type="search" id="eventSearch" placeholder="輸入年份或關鍵字搜尋，例如 1990 或 特殊教育" aria-label="搜尋事件">
@@ -102,18 +152,32 @@
   <h3>已加入年表</h3>
   <p id="doneText"></p>
   <p class="hint">重新整理年表網站，就會出現在這件事件底下。</p>
-  <p style="margin-top:24px"><button type="button" class="primary" id="again">再新增一筆</button> <button type="button" id="close">關閉</button></p>
+  <p style="margin-top:24px"><button type="button" class="primary" id="again">再新增一筆</button> <button type="button" id="attachNew" hidden>為這件事件加附件</button> <button type="button" id="close">關閉</button></p>
 </div>
 
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var events = [], maxBytes = 30 * 1024 * 1024, busy = false;
+  var events = [], maxBytes = 30 * 1024 * 1024, busy = false, mode = 'media', lastEvent = '';
+  var inSheet = !document.body.classList.contains('web');   // doGet() adds the class for the shareable web form
   var ACCEPT = {'照片': 'image/*', '剪報': 'image/*', '錄音': 'audio/*,.mp3,.m4a,.wav'};
   var FILE_HINT = {'照片': 'JPG 或 PNG', '剪報': 'JPG 或 PNG', '錄音': '建議 MP3，30MB 以內'};
+  var store = {
+    get: function (k) { try { return localStorage.getItem('timeline-form.' + k) || ''; } catch (e) { return ''; } },
+    set: function (k, v) { try { localStorage.setItem('timeline-form.' + k, v); } catch (e) {} }
+  };
 
-  function status(text, kind) { $('status').textContent = text; $('status').className = kind || ''; }
+  function statusBox() { return $(mode === 'event' ? 'evStatus' : 'status'); }
+  function status(text, kind) { var box = statusBox(); box.textContent = text; box.className = kind || ''; }
   function kind() { var c = document.querySelector('input[name=kind]:checked'); return c ? c.value : ''; }
+  function setBusy(on) { busy = on; $('submit').disabled = on; $('evSubmit').disabled = on; }
+  function message(error) { return String(error && error.message ? error.message : error).replace(/^Error:\s*/, ''); }
+
+  function setMode(next) {
+    mode = next;
+    document.querySelectorAll('[data-mode]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.mode === mode)); });
+    $('form').hidden = mode !== 'media'; $('eventForm').hidden = mode !== 'event'; $('done').hidden = true;
+  }
 
   function showKind() {
     var k = kind();
@@ -123,7 +187,7 @@
   }
 
   function renderEvents() {
-    var words = $('eventSearch').value.trim().toLowerCase().split(/\s+/).filter(Boolean), chosen = $('eventId').value;
+    var words = $('eventSearch').value.trim().toLowerCase().split(/\s+/).filter(Boolean), chosen = $('eventId').value || lastEvent;
     var list = events.filter(function (e) { var t = e.label.toLowerCase(); return words.every(function (w) { return t.indexOf(w) >= 0; }); });
     $('eventId').innerHTML = '';
     if (!list.length) { var none = new Option(events.length ? '沒有符合的事件' : '「事件」分頁還沒有資料', ''); none.disabled = true; $('eventId').add(none); return; }
@@ -139,10 +203,24 @@
     });
   }
 
+  // Passcode and author are shared by both forms and remembered on this device.
+  function identity() {
+    var passcode = $('passcode').value.trim();
+    if (!passcode) { $('who').open = true; return {error: '請先輸入通關密語。', focus: 'passcode'}; }
+    return {passcode: passcode, author: $('author').value.trim()};
+  }
+  function remember() { store.set('passcode', $('passcode').value.trim()); store.set('author', $('author').value.trim()); $('who').open = false; }
+  function failed(error) {
+    setBusy(false); var text = message(error); status('沒有成功：' + text, 'bad');
+    if (/密語/.test(text)) { $('who').open = true; $('passcode').focus(); $('passcode').select(); }
+  }
+
   function collect() {
-    var k = kind(), file = $('file').files[0];
+    var k = kind(), file = $('file').files[0], who = identity();
     var form = {eventId: $('eventId').value, kind: k, title: $('title').value.trim(), caption: $('caption').value.trim(), credit: $('credit').value.trim(),
       alt: '', text: '', transcript: '', link: ''};
+    if (who.error) return who;
+    form.passcode = who.passcode; form.author = who.author;
     if (!form.eventId) return {error: '請先選擇事件。', focus: 'eventSearch'};
     if (!k) return {error: '請選擇種類。', focus: 'kinds'};
     if (!form.title) return {error: '請填寫標題。', focus: 'title'};
@@ -161,7 +239,11 @@
     return {form: form, file: k === '文字' || k === '影片' || form.link ? null : file};
   }
 
-  function setBusy(on) { busy = on; $('submit').disabled = on; }
+  function finish(text, forEvent) {
+    setBusy(false); status(''); remember();
+    $('doneText').textContent = text; $('attachNew').hidden = !forEvent;
+    $('form').hidden = true; $('eventForm').hidden = true; $('done').hidden = false; $('again').focus();
+  }
 
   $('form').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -174,34 +256,67 @@
       if (file) got.form.file = file;
       google.script.run
         .withSuccessHandler(function (result) {
-          setBusy(false); status('');
           var label = (events.filter(function (x) { return x.id === got.form.eventId; })[0] || {}).label || got.form.eventId;
-          $('doneText').textContent = '「' + got.form.title + '」（' + got.form.kind + '）已加到「' + label + '」，編號 ' + result.id + '，在「附件」分頁第 ' + result.row + ' 列。' +
-            (result.shared === false ? ' 注意：檔案無法自動設為公開，請到雲端硬碟把它設成「知道連結的任何人都可以檢視」。' : '');
-          $('form').hidden = true; $('done').hidden = false; $('again').focus();
+          lastEvent = got.form.eventId;
+          finish('「' + got.form.title + '」（' + got.form.kind + '）已加到「' + label + '」，編號 ' + result.id + '，在「附件」分頁第 ' + result.row + ' 列。' +
+            (result.shared === false ? ' 注意：檔案無法自動設為公開，請試算表擁有者到雲端硬碟把它設成「知道連結的任何人都可以檢視」。' : ''), false);
         })
-        .withFailureHandler(function (error) { setBusy(false); status('沒有成功：' + (error && error.message ? error.message : error), 'bad'); })
+        .withFailureHandler(failed)
         .addAttachment(got.form);
-    }).catch(function (error) { setBusy(false); status(error.message, 'bad'); });
+    }).catch(failed);
   });
 
+  $('eventForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (busy) return;
+    var who = identity(), date = $('evDate').value.trim(), error = who.error ? who : null;
+    var form = {track: $('evTrack').value, date: date, title: $('evTitle').value.trim(), summary: $('evSummary').value.trim(), easy: $('evEasy').value.trim(), source: $('evSource').value.trim()};
+    if (!error && !/^\d{4}([-\/.]\d{1,2}){0,2}$/.test(date)) error = {error: '日期請寫成 1984-12-17、1984-12 或 1984。', focus: 'evDate'};
+    if (!error && !form.title) error = {error: '請填寫標題。', focus: 'evTitle'};
+    if (error) { status(error.error, 'bad'); $(error.focus).focus(); return; }
+    form.passcode = who.passcode; form.author = who.author;
+    setBusy(true); status('儲存中…');
+    google.script.run
+      .withSuccessHandler(function (result) {
+        events.push({id: result.id, label: result.label, hidden: false});
+        events.sort(function (a, b) { return a.label.localeCompare(b.label); });
+        lastEvent = result.id;
+        finish('事件「' + form.title + '」已加入，編號 ' + result.id + '，在「事件」分頁第 ' + result.row + ' 列。', true);
+      })
+      .withFailureHandler(failed)
+      .addEvent(form);
+  });
+
+  function clearFields(ids) { ids.forEach(function (id) { $(id).value = ''; }); }
   $('again').addEventListener('click', function () {
     // Keep the chosen event and kind: several attachments usually go to the same event.
-    ['title', 'fileLink', 'videoLink', 'text', 'clipText', 'caption', 'alt', 'transcript', 'credit'].forEach(function (id) { $(id).value = ''; });
-    $('file').value = ''; $('done').hidden = true; $('form').hidden = false; $('title').focus();
+    if (mode === 'event') { clearFields(['evDate', 'evTitle', 'evSummary', 'evEasy', 'evSource']); setMode('event'); $('evDate').focus(); return; }
+    clearFields(['title', 'fileLink', 'videoLink', 'text', 'clipText', 'caption', 'alt', 'transcript', 'credit']);
+    $('file').value = ''; setMode('media'); $('title').focus();
   });
-  $('close').addEventListener('click', function () { google.script.host.close(); });
+  $('attachNew').addEventListener('click', function () {
+    clearFields(['evDate', 'evTitle', 'evSummary', 'evEasy', 'evSource', 'eventSearch']);
+    setMode('media'); renderEvents(); $('eventId').value = lastEvent; $('title').focus();
+  });
+  $('close').hidden = !inSheet;
+  $('close').addEventListener('click', function () { if (inSheet) google.script.host.close(); });
   $('eventSearch').addEventListener('input', renderEvents);
-  $('form').addEventListener('change', function () { if (!busy && $('status').className === 'bad') status(''); });
+  document.querySelectorAll('[data-mode]').forEach(function (b) { b.addEventListener('click', function () { if (!busy) setMode(b.dataset.mode); }); });
+  document.addEventListener('change', function () { if (!busy && statusBox().className === 'bad') status(''); });
+
+  $('passcode').value = store.get('passcode'); $('author').value = store.get('author');
+  $('who').open = !$('passcode').value;
 
   google.script.run
     .withSuccessHandler(function (data) {
       events = data.events; maxBytes = data.maxBytes || maxBytes;
       $('kinds').innerHTML = data.kinds.map(function (k) { return '<label><input type="radio" name="kind" value="' + k + '">' + k + '</label>'; }).join('');
       $('kinds').addEventListener('change', showKind);
+      data.tracks.forEach(function (t) { $('evTrack').add(new Option(t, t)); });
       renderEvents(); showKind();
+      if (!data.ready) status('這份表單還沒有設定通關密語，暫時無法送出。請試算表擁有者用選單「年表 → 設定表單密語」。', 'bad');
     })
-    .withFailureHandler(function (error) { status('讀取事件失敗：' + (error && error.message ? error.message : error), 'bad'); })
+    .withFailureHandler(function (error) { status('讀取事件失敗：' + message(error), 'bad'); })
     .getFormData();
   showKind();
 })();

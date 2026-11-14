@@ -107,11 +107,11 @@ test('attachment rows attach to known events only and need usable content',()=>{
 
 // Apps Script helpers that do not touch Google services.
 const gs=vm.createContext({console});
-vm.runInContext(fs.readFileSync(path.join(root,'sheet','Code.gs'),'utf8')+'\nglobalThis.G={SEED_EVENTS,EVENT_HEADERS,MEDIA_HEADERS,nextAttachmentId,eventLabel,rowsToObjects,buildRow,validateAttachment,findProblems};',gs);
+vm.runInContext(fs.readFileSync(path.join(root,'sheet','Code.gs'),'utf8')+'\nglobalThis.G={SEED_EVENTS,EVENT_HEADERS,MEDIA_HEADERS,nextAttachmentId,nextEventId,folderIdFromUrl,validateEvent,validPasscode,passcodeMatches,eventLabel,rowsToObjects,buildRow,validateAttachment,findProblems};',gs);
 const G=gs.G;
 test('Apps Script seed matches the built-in snapshot and passes its own data check',()=>{
  const snapshot=JSON.parse(read('sheet-snapshot.json'));assert.deepEqual(plain(G.SEED_EVENTS),snapshot.events);
- for(const event of snapshot.events)assert.deepEqual(Object.keys(event),plain(G.EVENT_HEADERS));
+ for(const event of snapshot.events)assert(Object.keys(event).every(key=>G.EVENT_HEADERS.includes(key)));
  assert.deepEqual(plain(G.findProblems(G.SEED_EVENTS.map((e,i)=>({...e,_row:i+2})),[])),[]);
 });
 test('Apps Script numbers attachments, labels events and writes rows in header order',()=>{
@@ -129,4 +129,17 @@ test('Apps Script form validation asks for the right content per kind',()=>{
  assert.notEqual(G.validateAttachment({...base,kind:'其他',link:'https://a.example/x.png'}),'');
  const problems=plain(G.findProblems([{_row:2,'編號':'l3','類型':'法規與鑑定','日期':'1990-01-12','標題':'甲'}],[{_row:2,'事件編號':'l3、zz','種類':'錄音','連結':''}]));
  assert.equal(problems.length,2);
+});
+test('Apps Script passcode and new-event checks',()=>{
+ assert(!G.validPasscode('12345'));assert(G.validPasscode('123456'));assert(!G.validPasscode(undefined));
+ assert(G.passcodeMatches('年表通關密語',' 年表通關密語 '));for(const wrong of ['','年表通關密','年表通關密語x',undefined,null])assert(!G.passcodeMatches('年表通關密語',wrong));
+ assert.equal(G.nextEventId(['l3','n0','e001','e007']),'e008');assert.equal(G.nextEventId(['l3']),'e001');
+ const ok={track:'研究',date:'1984-12-17',title:'標題'};assert.equal(G.validateEvent(ok),'');assert.equal(G.validateEvent({...ok,date:'1984'}),'');assert.equal(G.validateEvent({...ok,date:'1984/6'}),'');
+ for(const bad of [{...ok,track:'其他'},{...ok,date:'去年'},{...ok,date:'1984-13'},{...ok,date:'1984-12-32'},{...ok,date:'84'},{...ok,title:' '},null])assert.notEqual(G.validateEvent(bad),'');
+ assert(G.EVENT_HEADERS.includes('填寫人')&&G.MEDIA_HEADERS.includes('填寫人'));
+});
+test('Apps Script reads a Drive folder ID from pasted links',()=>{
+ const id='1AbCdEfGhIjKlMnOpQrStUvWxYz012345';
+ for(const value of ['https://drive.google.com/drive/folders/'+id+'?usp=sharing','https://drive.google.com/drive/u/1/folders/'+id,'https://drive.google.com/open?id='+id,' '+id+' '])assert.equal(G.folderIdFromUrl(value),id);
+ for(const value of ['','https://example.org/','資料夾',null])assert.equal(G.folderIdFromUrl(value),'');
 });

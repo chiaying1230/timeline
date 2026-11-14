@@ -1,13 +1,14 @@
 /**
  * 智能障礙歷史年表 — 試算表工具
  * 安裝方式見 sheet/安裝說明.md。貼進「擴充功能 → Apps Script」的 Code.gs。
- * 提供選單「年表」：新增附件（表單）、初次設定、檢查資料。
+ * 提供選單「年表」與一個可分享的表單網址（部署為網頁應用程式）。
+ * 表單以部署者（試算表擁有者）的身分執行：上傳的檔案存進擁有者的雲端硬碟，以通關密語保護。
  */
 
 var EVENT_SHEET = '事件';
 var MEDIA_SHEET = '附件';
-var EVENT_HEADERS = ['編號', '顯示', '類型', '日期', '日期精確度', '標題', '完整說明', '備註', '易讀介紹', '資料來源', '精選理由', '剪報序號'];
-var MEDIA_HEADERS = ['編號', '顯示', '事件編號', '種類', '標題', '連結', '圖說', '替代文字', '內文', '逐字稿', '來源與授權', '新增時間'];
+var EVENT_HEADERS = ['編號', '顯示', '類型', '日期', '日期精確度', '標題', '完整說明', '備註', '易讀介紹', '資料來源', '精選理由', '剪報序號', '填寫人'];
+var MEDIA_HEADERS = ['編號', '顯示', '事件編號', '種類', '標題', '連結', '圖說', '替代文字', '內文', '逐字稿', '來源與授權', '填寫人', '新增時間'];
 var TRACKS = ['智力測驗', '適應行為量表', '法規與鑑定', '剪報', '研究', '學生人數'];
 var PRECISIONS = ['日', '月', '年', '年代'];
 var KINDS = ['照片', '剪報', '錄音', '影片', '文字'];
@@ -22,29 +23,126 @@ var SEED_EVENTS = /*SEED_START*/[{"編號": "n0", "顯示": "是", "類型": "�
 
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('年表')
-    .addItem('新增附件（照片、錄音、影片、文字）', 'showAttachmentForm')
+    .addItem('開啟表單（新增附件或事件）', 'showAttachmentForm')
+    .addItem('表單網址（分享給要上傳的人）', 'showFormUrl')
     .addSeparator()
     .addItem('檢查資料', 'checkData')
+    .addSeparator()
     .addItem('初次設定', 'setup')
+    .addItem('設定表單密語', 'setPasscode')
+    .addItem('指定附件資料夾（使用現有的雲端硬碟資料夾）', 'setFolder')
     .addToUi();
 }
 
+// 表單網址：部署為網頁應用程式後，任何人開啟這個網址都會看到表單。
+function doGet() {
+  var page = HtmlService.createHtmlOutputFromFile('Form').getContent().replace('<body>', '<body class="web">');
+  return HtmlService.createHtmlOutput(page).setTitle('年表：新增內容')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+function formUrl_() {
+  try { return ScriptApp.getService().getUrl() || ''; } catch (e) { return ''; }
+}
+
+// 檔案會存進「執行的人」的雲端硬碟，所以試算表內的表單只開給擁有者；其他人請用表單網址。
 function showAttachmentForm() {
+  var ui = SpreadsheetApp.getUi(), owner = SpreadsheetApp.getActiveSpreadsheet().getOwner();
+  var me = Session.getEffectiveUser().getEmail();
+  if (owner && me && owner.getEmail() !== me) {
+    var url = formUrl_();
+    ui.alert('請改用表單網址',
+      '為了讓檔案存進試算表擁有者的雲端硬碟，請用表單網址上傳' + (url ? '：\n' + url : '（請向擁有者索取）。'), ui.ButtonSet.OK);
+    return;
+  }
   var html = HtmlService.createHtmlOutputFromFile('Form').setWidth(560).setHeight(680);
-  SpreadsheetApp.getUi().showModalDialog(html, '新增附件');
+  ui.showModalDialog(html, '年表：新增內容');
+}
+
+function showFormUrl() {
+  var ui = SpreadsheetApp.getUi(), url = formUrl_();
+  var ready = !!PropertiesService.getScriptProperties().getProperty('passcode');
+  if (!url) {
+    ui.alert('還沒有表單網址',
+      '請到「擴充功能 → Apps Script」，按右上角「部署 → 新增部署作業」，類型選「網頁應用程式」，\n執行身分選「我」，存取權選「任何擁有 Google 帳戶的使用者」，再按「部署」。', ui.ButtonSet.OK);
+    return;
+  }
+  ui.alert('表單網址', url + '\n\n把這個網址和通關密語交給要上傳的人。' + (ready ? '' : '\n\n注意：還沒有設定密語，表單目前無法送出。請用「年表 → 設定表單密語」。'), ui.ButtonSet.OK);
+}
+
+function setPasscode() {
+  var ui = SpreadsheetApp.getUi();
+  var answer = ui.prompt('設定表單密語', '上傳的人要輸入這組密語才能送出。至少 6 個字，請勿使用其他地方的密碼。', ui.ButtonSet.OK_CANCEL);
+  if (answer.getSelectedButton() !== ui.Button.OK) return;
+  var code = answer.getResponseText().trim();
+  if (!validPasscode(code)) { ui.alert('密語至少要 6 個字，請重新設定。'); return; }
+  PropertiesService.getScriptProperties().setProperty('passcode', code);
+  ui.alert('已設定密語。之後可隨時用同一個選單更換。');
+}
+
+function setFolder() {
+  var ui = SpreadsheetApp.getUi();
+  var answer = ui.prompt('指定附件資料夾',
+    '貼上雲端硬碟資料夾的網址。之後表單上傳的檔案會存到這個資料夾（底下會自動建立「圖片」「錄音」）。\n\n' +
+    '資料夾必須是「知道連結的任何人都可以檢視」，網站才讀得到裡面的檔案。', ui.ButtonSet.OK_CANCEL);
+  if (answer.getSelectedButton() !== ui.Button.OK) return;
+  var id = folderIdFromUrl(answer.getResponseText()), folder;
+  if (!id) { ui.alert('看不出這是資料夾網址。請從雲端硬碟開啟資料夾後，複製網址列的網址。'); return; }
+  try { folder = DriveApp.getFolderById(id); } catch (e) { ui.alert('無法開啟這個資料夾。請確認你的帳號有編輯權限。'); return; }
+  PropertiesService.getDocumentProperties().setProperty('folderId', id);
+  var note = '';
+  try { folder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); }
+  catch (e) { note = '\n\n無法自動設為公開檢視，請擁有者從資料夾的「共用」手動設定。'; }
+  ui.alert('已指定資料夾「' + folder.getName() + '」。' + note);
+}
+
+function checkPasscode_(given) {
+  var stored = PropertiesService.getScriptProperties().getProperty('passcode');
+  if (!stored) throw new Error('表單還沒有設定密語。請試算表擁有者用選單「年表 → 設定表單密語」。');
+  if (!passcodeMatches(stored, given)) {
+    Utilities.sleep(1500);
+    throw new Error('密語不正確。');
+  }
 }
 
 /* ---------- 不依賴 Google 服務的小工具（有單元測試） ---------- */
 
-function nextAttachmentId(existing) {
-  var max = 0;
+function nextId(prefix, existing) {
+  var max = 0, pattern = new RegExp('^' + prefix + '(\\d+)$');
   existing.forEach(function (id) {
-    var m = String(id).match(/^a(\d+)$/);
+    var m = String(id).match(pattern);
     if (m) max = Math.max(max, Number(m[1]));
   });
   var n = String(max + 1);
   while (n.length < 3) n = '0' + n;
-  return 'a' + n;
+  return prefix + n;
+}
+function nextAttachmentId(existing) { return nextId('a', existing); }
+function nextEventId(existing) { return nextId('e', existing); }
+
+// 接受雲端硬碟資料夾的網址或 ID。
+function folderIdFromUrl(value) {
+  var text = String(value == null ? '' : value).trim();
+  var m = text.match(/\/folders\/([\w-]{10,})/) || text.match(/[?&]id=([\w-]{10,})/) || text.match(/^([\w-]{20,})$/);
+  return m ? m[1] : '';
+}
+
+function validPasscode(code) { return typeof code === 'string' && code.trim().length >= 6; }
+function passcodeMatches(stored, given) {
+  var a = String(stored), b = String(given == null ? '' : given).trim(), diff = a.length ^ b.length;
+  for (var i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ (b.charCodeAt(i) || 0);
+  return diff === 0;
+}
+
+function validateEvent(form) {
+  if (!form) return '沒有收到資料。';
+  if (TRACKS.indexOf(form.track) < 0) return '請選擇類型。';
+  var date = String(form.date || '').trim();
+  if (!validDate(date)) return '日期請寫成 1984-12-17、1984-12 或 1984。';
+  var p = date.split(/[-\/.]/).map(Number);
+  if (p[0] < 1800 || p[0] > 2200 || (p[1] != null && (p[1] < 1 || p[1] > 12)) || (p[2] != null && (p[2] < 1 || p[2] > 31))) return '日期的年、月、日不合理，請再確認。';
+  if (!String(form.title || '').trim()) return '請填寫標題。';
+  return '';
 }
 
 function eventLabel(row) {
@@ -122,12 +220,27 @@ function readObjects_(name) {
   return values.length ? rowsToObjects(values) : [];
 }
 
+function ensureHeaders_(sheet, wanted) {
+  var last = Math.max(sheet.getLastColumn(), 1);
+  var headers = sheet.getRange(1, 1, 1, last).getDisplayValues()[0].map(function (h) { return String(h).trim(); });
+  wanted.forEach(function (h) {
+    if (headers.indexOf(h) >= 0) return;
+    var col = headers.length === 1 && !headers[0] ? 1 : headers.length + 1;
+    if (col > sheet.getMaxColumns()) sheet.insertColumnAfter(sheet.getMaxColumns());
+    sheet.getRange(1, col).setNumberFormat('@').setValue(h).setFontWeight('bold').setBackground('#efe9dd');
+    if (col === 1) headers[0] = h; else headers.push(h);
+  });
+  return headers;
+}
+
 function getFormData() {
   var events = readObjects_(EVENT_SHEET).filter(function (e) { return e['編號'] && e['標題']; });
   events.sort(function (a, b) { return String(a['日期']).localeCompare(String(b['日期'])); });
   return {
     events: events.map(function (e) { return {id: e['編號'], label: eventLabel(e), hidden: e['顯示'] === '否'}; }),
     kinds: KINDS,
+    tracks: TRACKS,
+    ready: !!PropertiesService.getScriptProperties().getProperty('passcode'),
     maxBytes: MAX_UPLOAD_BYTES
   };
 }
@@ -146,14 +259,40 @@ function getFolder_(kind) {
   return found.hasNext() ? found.next() : root.createFolder(name);
 }
 
+function addEvent(form) {
+  checkPasscode_(form && form.passcode);
+  var problem = validateEvent(form);
+  if (problem) throw new Error(problem);
+  var lock = LockService.getDocumentLock();
+  lock.waitLock(30000);
+  try {
+    var sheet = getSheet_(EVENT_SHEET), headers = ensureHeaders_(sheet, EVENT_HEADERS);
+    var id = nextEventId(readObjects_(EVENT_SHEET).map(function (e) { return e['編號']; }));
+    var parts = String(form.date).trim().split(/[-\/.]/);
+    var title = String(form.title).trim();
+    var row = buildRow(headers, {
+      '編號': id, '顯示': '是', '類型': form.track, '日期': String(form.date).trim().replace(/[\/.]/g, '-'),
+      '日期精確度': parts.length === 3 ? '日' : parts.length === 2 ? '月' : '年',
+      '標題': title, '完整說明': form.summary || '', '備註': form.memo || '', '易讀介紹': form.easy || '',
+      '資料來源': form.source || '', '填寫人': form.author || ''
+    });
+    var at = sheet.getLastRow() + 1;
+    sheet.getRange(at, 1, 1, row.length).setNumberFormat('@').setValues([row]);
+    return {id: id, row: at, label: eventLabel({'日期': form.date, '標題': title, '類型': form.track})};
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 function addAttachment(form) {
+  checkPasscode_(form && form.passcode);
   var problem = validateAttachment(form);
   if (problem) throw new Error(problem);
   var lock = LockService.getDocumentLock();
   lock.waitLock(30000);
   try {
     var sheet = getSheet_(MEDIA_SHEET);
-    var headers = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getDisplayValues()[0];
+    var headers = ensureHeaders_(sheet, MEDIA_HEADERS);
     var existing = readObjects_(MEDIA_SHEET);
     var id = nextAttachmentId(existing.map(function (m) { return m['編號']; }));
     var link = String(form.link || '').trim(), shared = true;
@@ -168,7 +307,7 @@ function addAttachment(form) {
     var row = buildRow(headers, {
       '編號': id, '顯示': '是', '事件編號': form.eventId, '種類': form.kind, '標題': String(form.title).trim(),
       '連結': form.kind === '文字' ? '' : link, '圖說': form.caption || '', '替代文字': form.alt || '',
-      '內文': form.text || '', '逐字稿': form.transcript || '', '來源與授權': form.credit || '',
+      '內文': form.text || '', '逐字稿': form.transcript || '', '來源與授權': form.credit || '', '填寫人': form.author || '',
       '新增時間': Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm')
     });
     var at = sheet.getLastRow() + 1;
@@ -195,6 +334,7 @@ function checkData() {
 function prepareSheet_(ss, name, headers, widths) {
   var sheet = ss.getSheetByName(name) || ss.insertSheet(name);
   if (sheet.getLastRow() === 0) sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  else ensureHeaders_(sheet, headers);
   sheet.getRange(1, 1, sheet.getMaxRows(), sheet.getMaxColumns()).setNumberFormat('@').setVerticalAlignment('top');
   sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#efe9dd');
   sheet.setFrozenRows(1);
@@ -210,7 +350,7 @@ function dropdown_(sheet, headers, header, values) {
 
 function setup() {
   var ss = SpreadsheetApp.getActiveSpreadsheet(), ui = SpreadsheetApp.getUi();
-  var events = prepareSheet_(ss, EVENT_SHEET, EVENT_HEADERS, [70, 50, 110, 100, 90, 220, 360, 220, 320, 180, 200, 80]);
+  var events = prepareSheet_(ss, EVENT_SHEET, EVENT_HEADERS, [70, 50, 110, 100, 90, 220, 360, 220, 320, 180, 200, 80, 90]);
   if (events.getLastRow() <= 1 && SEED_EVENTS.length) {
     var rows = SEED_EVENTS.map(function (e) { return buildRow(EVENT_HEADERS, e); });
     events.getRange(2, 1, rows.length, EVENT_HEADERS.length).setValues(rows);
@@ -220,7 +360,7 @@ function setup() {
   dropdown_(events, EVENT_HEADERS, '類型', TRACKS);
   dropdown_(events, EVENT_HEADERS, '日期精確度', PRECISIONS);
 
-  var media = prepareSheet_(ss, MEDIA_SHEET, MEDIA_HEADERS, [70, 50, 90, 70, 200, 260, 240, 200, 320, 320, 180, 130]);
+  var media = prepareSheet_(ss, MEDIA_SHEET, MEDIA_HEADERS, [70, 50, 90, 70, 200, 260, 240, 200, 320, 320, 180, 90, 130]);
   dropdown_(media, MEDIA_HEADERS, '顯示', ['是', '否']);
   dropdown_(media, MEDIA_HEADERS, '種類', KINDS);
 
@@ -239,7 +379,7 @@ function setup() {
   ui.alert('設定完成',
     '「事件」「附件」兩個分頁已就緒。' + note +
     '\n檔案會存到雲端硬碟資料夾「' + folder.getName() + '」。' +
-    '\n\n之後請用選單「年表 → 新增附件」加入展出內容。' +
+    '\n\n接下來：\n1. 「年表 → 設定表單密語」\n2. 在 Apps Script 部署為網頁應用程式（見安裝說明）\n3. 「年表 → 表單網址」取得網址，交給要上傳的人' +
     '\n\n請把這份試算表的網址提供給網站維護者：\n' + ss.getUrl(),
     ui.ButtonSet.OK);
 }
