@@ -1,7 +1,5 @@
-/* ============ 時間軸版本比較：共用的工具與 50 件事件 ============
-   事件 = 重大事件表的 18 件（src/00-data.js 的 TREE）＋ pick_events.py 從剪報、研究、學生人數挑出的事件（events.json）。
-   照片與訪談沿用 src/60-media.js 的清單：清單是空的時候是版面示意，放入真實資料後就會換成真的。 */
-const PICK = /*__EVENTS__*/;
+/* ============ 共用的工具與事件 ============
+   事件由 SHEET.events 提供（Google 試算表或內建備份 sheet-snapshot.json）。 */
 const $ = (s,r) => (r||document).querySelector(s);
 const $$ = (s,r) => Array.from((r||document).querySelectorAll(s));
 const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -37,25 +35,13 @@ function mark(shape,x,y,r,attrs){
 // 小圖示：實心，或空心（篩選還沒選到的軌道）
 const icon = (k,hollow) => `<svg class="ico" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" focusable="false">${mark(TRACKS[k].shape,7,7,hollow?4:4.6, hollow ? `fill="var(--paper)" stroke="${colorOf(k)}" stroke-width="2"` : `fill="${colorOf(k)}"`)}</svg>`;
 
-/* ---------- 50 件事件 ---------- */
-// 重大事件表的重要度（1–3）：縮放到全覽時只寫出 3 的名稱
-const IMPORTANCE = {q1:3,q2:2,q3:2,q4:2,q5:3, b1:3,b2:3,b3:2,b4:2,b5:2, l1:3,l2:3,l3:3,l4:2,l5:3,l6:3,l7:3,l8:3};
+/* ---------- 事件：來自 Google 試算表「事件」分頁（或網站內建備份），見 src-reader/02-sheet.js ---------- */
 function parseDate(e){
   const p = String(e.date).split('-').map(Number);
   e.y = p[0]; e.mo = p[1]||0; e.dd = p[2]||0; e.t = p[0]+((p[1]||1)-1)/12+((p[2]||1)-1)/372; e.dec = Math.floor(e.y/10)*10;
 }
 const EV = [];
-TREE.events.filter(e=>e.id!=='root').forEach(e=>{
-  const lines = e.desc.split('\n'), k = lines.findIndex(s=>s.startsWith('備註：'));
-  const x = {id:e.id, type:'event', track:e.theme, title:e.title, date:e.date, when:e.when, importance:IMPORTANCE[e.id]||2,
-    summary:(k<0?lines:lines.slice(0,k)).join('\n'), memo:k<0 ? '' : lines.slice(k).join('\n').replace(/^備註：/,''),
-    source:'智能障礙重大事件表', parents:e.parents.filter(p=>p!=='root'), trends:e.trends||[], media:[]};
-  parseDate(x);
-  x.precision = /年代/.test(e.when||'') ? 'decade' : e.when ? 'year' : x.dd ? 'day' : x.mo ? 'month' : 'year';
-  x.certainty = x.precision==='decade' ? 'approx' : 'sure';
-  EV.push(x);
-});
-PICK.forEach(p=>{ const x = Object.assign({parents:[], trends:[], memo:'', media:[]}, p); parseDate(x); if(x.news!=null) x.media.push({kind:'clip', i:x.news}); EV.push(x); });
+SHEET.events.forEach(p=>{ const x = Object.assign({parents:[], trends:[], memo:'', media:[]}, p); parseDate(x); if(x.news!=null) x.media.push({kind:'clip', i:x.news}); EV.push(x); });
 EV.sort((a,b)=>a.t-b.t || TK.indexOf(a.track)-TK.indexOf(b.track));
 EV.forEach((e,i)=>e.n = i);
 const byId = Object.fromEntries(EV.map(e=>[e.id,e]));

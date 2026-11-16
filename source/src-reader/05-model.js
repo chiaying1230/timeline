@@ -25,8 +25,8 @@ const ReaderData = (() => {
   const names={n0:'本站最早收錄的剪報',n2:'教育局設班告家長書的報導',n60:'家長陳情的相關報導',n87:'使用「智障」用語的剪報',n737:'本站最後收錄的剪報（2022）'};
   function title(e) {if(names[e.id])return names[e.id];if(e.type==='lit'&&e.title.startsWith('第一篇'))return '本站收錄的'+e.title.replace('第一篇','首篇');return e.title;}
   function easy(e) {
-    if(e.news!=null){const n=NEWS[e.news];return [`${n.d.replace(/-/g,'．')}，${n.o}刊出一篇報導。`,`整理標題是「${n.t}」。`,`這篇剪報編到的用語：${n.wg.join('、')||'未編碼'}。`];}
-    const lines=(EASY[e.id]||e.summary).split('\n').filter(Boolean);
+    if(!e.easy&&e.news!=null){const n=NEWS[e.news];return [`${n.d.replace(/-/g,'．')}，${n.o}刊出一篇報導。`,`整理標題是「${n.t}」。`,`這篇剪報編到的用語：${n.wg.join('、')||'未編碼'}。`];}
+    const lines=(e.easy||e.summary).split('\n').filter(Boolean);
     if(e.type==='lit') return ['以下描述以本站收錄的研究資料為範圍。',...lines];
     return lines;
   }
