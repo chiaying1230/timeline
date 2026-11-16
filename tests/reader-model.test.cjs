@@ -107,7 +107,7 @@ test('attachment rows attach to known events only and need usable content',()=>{
 
 // Apps Script helpers that do not touch Google services.
 const gs=vm.createContext({console});
-vm.runInContext(fs.readFileSync(path.join(root,'sheet','Code.gs'),'utf8')+'\nglobalThis.G={SEED_EVENTS,EVENT_HEADERS,MEDIA_HEADERS,nextAttachmentId,nextEventId,folderIdFromUrl,validateEvent,validPasscode,passcodeMatches,eventLabel,rowsToObjects,buildRow,validateAttachment,findProblems};',gs);
+vm.runInContext(fs.readFileSync(path.join(root,'sheet','Code.gs'),'utf8')+'\nglobalThis.G={SEED_EVENTS,EVENT_HEADERS,MEDIA_HEADERS,nextAttachmentId,nextEventId,folderIdFromUrl,questionnaireChoice,eventIdFromChoice,driveIdsFromAnswer,recordsFromResponse,validateEvent,validPasscode,passcodeMatches,eventLabel,rowsToObjects,buildRow,validateAttachment,findProblems};',gs);
 const G=gs.G;
 test('Apps Script seed matches the built-in snapshot and passes its own data check',()=>{
  const snapshot=JSON.parse(read('sheet-snapshot.json'));assert.deepEqual(plain(G.SEED_EVENTS),snapshot.events);
@@ -142,4 +142,21 @@ test('Apps Script reads a Drive folder ID from pasted links',()=>{
  const id='1AbCdEfGhIjKlMnOpQrStUvWxYz012345';
  for(const value of ['https://drive.google.com/drive/folders/'+id+'?usp=sharing','https://drive.google.com/drive/u/1/folders/'+id,'https://drive.google.com/open?id='+id,' '+id+' '])assert.equal(G.folderIdFromUrl(value),id);
  for(const value of ['','https://example.org/','資料夾',null])assert.equal(G.folderIdFromUrl(value),'');
+});
+test('questionnaire responses become attachment rows the site accepts',()=>{
+ const choice=G.questionnaireChoice({'編號':'l3','日期':'1990-01-12','標題':'福利法改稱智能障礙者','類型':'法規與鑑定'});
+ assert.equal(choice,'1990｜福利法改稱智能障礙者（法規與鑑定）〔l3〕');assert.equal(G.eventIdFromChoice(choice),'l3');assert.equal(G.eventIdFromChoice('沒有編號'),'');
+ const a='1AbCdEfGhIjKlMnOpQrStUvWxYz01234A',b='1AbCdEfGhIjKlMnOpQrStUvWxYz01234B';
+ assert.deepEqual(plain(G.driveIdsFromAnswer('https://drive.google.com/open?id='+a+', https://drive.google.com/file/d/'+b+'/view, https://drive.google.com/open?id='+a)),[a,b]);
+ assert.deepEqual(plain(G.driveIdsFromAnswer('')),[]);
+ const audio=plain(G.recordsFromResponse({'時間戳記':['2026/11/16'],'事件':[choice],'種類':['錄音'],'標題':['口述訪談'],'檔案（選填）':['https://drive.google.com/open?id='+a+', https://drive.google.com/open?id='+b],'連結':[''],'逐字稿':['0:00 開始'],'填寫人':['小明']}));
+ assert.equal(audio.length,2);assert.equal(audio[0]['標題'],'口述訪談（1）');assert.equal(audio[1]['連結'],'https://drive.google.com/file/d/'+b+'/view');assert.equal(audio[0]._fileId,a);assert.equal(audio[0]['填寫人'],'小明');
+ const video=plain(G.recordsFromResponse({'事件':[choice],'種類':['影片'],'標題':['紀錄片'],'連結':['https://youtu.be/dQw4w9WgXcQ']}));
+ const text=plain(G.recordsFromResponse({'事件':[choice],'種類':['文字'],'標題':[''],'文字內容':['一段話'],'連結':['https://ignored.example']}));
+ assert.equal(text[0]['連結'],'');assert.equal(text[0]['標題'],'文字');
+ // Rows written by the questionnaire must be readable by the site.
+ const rows=[...audio,...video,...text].map((r,i)=>({...r,_row:i+2,'編號':'a00'+(i+1)}));
+ const problems=[];const media=plain(S.toMedia(rows,['l3'],problems));
+ assert.deepEqual(problems,[]);assert.deepEqual(media.map(m=>m.kind),['audio','audio','video','text']);assert.equal(media[0].link.embed,'https://drive.google.com/file/d/'+a+'/preview');assert.equal(media[2].link.provider,'youtube');
+ const lost=plain(G.recordsFromResponse({'事件':['亂填'],'種類':['照片'],'標題':['x']}));assert.equal(lost.length,1);assert.equal(lost[0]['事件編號'],'');
 });

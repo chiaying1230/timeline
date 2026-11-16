@@ -1,7 +1,8 @@
 /**
  * 智能障礙歷史年表 — 試算表工具
  * 安裝方式見 sheet/安裝說明.md。貼進「擴充功能 → Apps Script」的 Code.gs。
- * 提供選單「年表」與一個可分享的表單網址（部署為網頁應用程式）。
+ * 提供選單「年表」、一份 Google 問卷（其他人填寫後自動寫入「附件」分頁），
+ * 以及一個可分享的表單網址（進階，需部署為網頁應用程式）。
  * 表單以部署者（試算表擁有者）的身分執行：上傳的檔案存進擁有者的雲端硬碟，以通關密語保護。
  */
 
@@ -23,8 +24,12 @@ var SEED_EVENTS = /*SEED_START*/[{"編號": "n0", "顯示": "是", "類型": "�
 
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('年表')
+    .addItem('建立 Google 問卷（給其他人填寫上傳）', 'createQuestionnaire')
+    .addItem('更新問卷的事件清單', 'refreshQuestionnaireEvents')
+    .addItem('問卷網址', 'showQuestionnaireUrl')
+    .addSeparator()
     .addItem('開啟表單（新增附件或事件）', 'showAttachmentForm')
-    .addItem('表單網址（分享給要上傳的人）', 'showFormUrl')
+    .addItem('表單網址（進階：需部署網頁應用程式）', 'showFormUrl')
     .addSeparator()
     .addItem('檢查資料', 'checkData')
     .addSeparator()
@@ -318,6 +323,141 @@ function addAttachment(form) {
   }
 }
 
+/* ---------- Google 問卷 ---------- */
+
+var Q = {event: '事件', kind: '種類', title: '標題', file: '檔案', link: '連結', text: '文字內容', caption: '圖說',
+  alt: '替代文字', transcript: '逐字稿', credit: '來源與授權', author: '填寫人'};
+
+// 問卷的事件選項，結尾帶編號，例如「1990｜福利法改稱智能障礙者（法規與鑑定）〔l3〕」。
+function questionnaireChoice(row) { return eventLabel(row) + '〔' + row['編號'] + '〕'; }
+function eventIdFromChoice(choice) {
+  var m = String(choice == null ? '' : choice).match(/〔([\w-]+)〕\s*$/);
+  return m ? m[1] : '';
+}
+function driveIdsFromAnswer(answer) {
+  var ids = [];
+  String(answer == null ? '' : answer).split(/[,\s]+/).forEach(function (part) {
+    var m = part.match(/[?&]id=([\w-]{10,})/) || part.match(/\/d\/([\w-]{10,})/);
+    if (m && ids.indexOf(m[1]) < 0) ids.push(m[1]);
+  });
+  return ids;
+}
+
+// 把一筆問卷回應轉成「附件」分頁的資料列（不含編號）。一次上傳多個檔案就產生多列。
+// namedValues: {題目: [答案]}，題目只要以對應的名稱開頭即可（方便在問卷上加說明文字）。
+function recordsFromResponse(namedValues) {
+  var keys = Object.keys(namedValues || {});
+  function get(name) {
+    var key = keys.filter(function (k) { return k.trim() === name; })[0] || keys.filter(function (k) { return k.trim().indexOf(name) === 0; })[0];
+    var value = key == null ? '' : namedValues[key];
+    return String(Array.isArray(value) ? value.join(', ') : value == null ? '' : value).trim();
+  }
+  var kind = get(Q.kind), title = get(Q.title), link = get(Q.link), files = driveIdsFromAnswer(get(Q.file));
+  var base = {
+    '顯示': '是', '事件編號': eventIdFromChoice(get(Q.event)), '種類': kind, '圖說': get(Q.caption), '替代文字': get(Q.alt),
+    '內文': get(Q.text), '逐字稿': get(Q.transcript), '來源與授權': get(Q.credit), '填寫人': get(Q.author)
+  };
+  function record(extra) { var o = {}; Object.keys(base).forEach(function (k) { o[k] = base[k]; }); Object.keys(extra).forEach(function (k) { o[k] = extra[k]; }); return o; }
+  if (kind === '文字') return [record({'標題': title || '文字', '連結': ''})];
+  if (!files.length) return [record({'標題': title || kind, '連結': link})];
+  return files.map(function (id, i) {
+    return record({'標題': (title || kind) + (files.length > 1 ? '（' + (i + 1) + '）' : ''), '連結': 'https://drive.google.com/file/d/' + id + '/view', _fileId: id});
+  });
+}
+
+function questionnaire_() {
+  var id = PropertiesService.getDocumentProperties().getProperty('questionnaireId');
+  if (!id) return null;
+  try { return FormApp.openById(id); } catch (e) { return null; }
+}
+
+function eventChoices_() {
+  var events = readObjects_(EVENT_SHEET).filter(function (e) { return e['編號'] && e['標題'] && e['顯示'] !== '否'; });
+  events.sort(function (a, b) { return String(a['日期']).localeCompare(String(b['日期'])); });
+  return events.map(questionnaireChoice);
+}
+
+function syncQuestionnaireEvents_(form) {
+  var choices = eventChoices_();
+  if (!choices.length) return 0;
+  var items = form.getItems(FormApp.ItemType.LIST).filter(function (item) { return item.getTitle().trim().indexOf(Q.event) === 0; });
+  if (!items.length) throw new Error('問卷裡找不到「事件」下拉題。');
+  items[0].asListItem().setChoiceValues(choices);
+  return choices.length;
+}
+
+function createQuestionnaire() {
+  var ui = SpreadsheetApp.getUi(), ss = SpreadsheetApp.getActiveSpreadsheet();
+  getSheet_(EVENT_SHEET); getSheet_(MEDIA_SHEET);
+  if (questionnaire_()) {
+    var again = ui.alert('已經有一份問卷', '要再建立一份新的嗎？舊問卷不會被刪除，但之後只有新問卷的回應會寫入「附件」。', ui.ButtonSet.YES_NO);
+    if (again !== ui.Button.YES) return;
+  }
+  var form = FormApp.create('年表：提供展出內容');
+  form.setDescription('請選擇事件與種類，再上傳檔案或填寫內容。送出後會出現在年表網站上。\n' +
+    '照片、剪報、錄音：請用「檔案」上傳。影片：請先上傳到 YouTube，再把連結貼在「連結」。文字：請填在「文字內容」。');
+  form.addListItem().setTitle(Q.event).setHelpText('這份內容屬於哪一件事件？').setChoiceValues(eventChoices_().length ? eventChoices_() : ['（尚無事件）']).setRequired(true);
+  form.addMultipleChoiceItem().setTitle(Q.kind).setChoiceValues(KINDS).setRequired(true);
+  form.addTextItem().setTitle(Q.title).setHelpText('例：家長會理事長口述訪談').setRequired(true);
+  form.addTextItem().setTitle(Q.link).setHelpText('影片請貼 YouTube 連結。照片、剪報、錄音請改用「檔案」上傳，這一題留空。');
+  form.addParagraphTextItem().setTitle(Q.text).setHelpText('種類選「文字」時填寫；剪報也可以在這裡貼上內文。');
+  form.addTextItem().setTitle(Q.caption).setHelpText('顯示在附件下方的說明，可不填。');
+  form.addTextItem().setTitle(Q.alt).setHelpText('照片、剪報：描述畫面，給使用螢幕報讀軟體的讀者。可不填。');
+  form.addParagraphTextItem().setTitle(Q.transcript).setHelpText('錄音、影片可填。一行一段，開頭寫時間，例如「1:20 這一段的內容」。');
+  form.addTextItem().setTitle(Q.credit).setHelpText('例：王小明提供，已取得公開展示同意。可不填。');
+  form.addTextItem().setTitle(Q.author).setHelpText('你的名字，可不填。');
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  PropertiesService.getDocumentProperties().setProperty('questionnaireId', form.getId());
+
+  ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'onQuestionnaireSubmit') ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger('onQuestionnaireSubmit').forSpreadsheet(ss).onFormSubmit().create();
+
+  ui.alert('問卷已建立，還差一步',
+    'Google 不允許程式自動加入「檔案上傳」題，請手動加一次：\n\n' +
+    '1. 開啟下面的編輯網址\n2. 在「標題」這一題後面按「＋」新增題目\n3. 題目名稱輸入：檔案\n4. 題型選「檔案上傳」，按「繼續」\n5. 檔案大小上限建議選 100 MB 或 1 GB\n\n' +
+    '編輯網址：\n' + form.getEditUrl() + '\n\n完成後用「年表 → 問卷網址」取得要分享給填寫者的網址。', ui.ButtonSet.OK);
+}
+
+function refreshQuestionnaireEvents() {
+  var ui = SpreadsheetApp.getUi(), form = questionnaire_();
+  if (!form) { ui.alert('還沒有問卷。請先用「年表 → 建立 Google 問卷」。'); return; }
+  ui.alert('問卷的事件清單已更新，共 ' + syncQuestionnaireEvents_(form) + ' 件。');
+}
+
+function showQuestionnaireUrl() {
+  var ui = SpreadsheetApp.getUi(), form = questionnaire_();
+  if (!form) { ui.alert('還沒有問卷。請先用「年表 → 建立 Google 問卷」。'); return; }
+  var hasFile = form.getItems(FormApp.ItemType.FILE_UPLOAD).length > 0;
+  ui.alert('問卷網址',
+    '分享給填寫者：\n' + form.getPublishedUrl() + '\n\n編輯問卷：\n' + form.getEditUrl() +
+    (hasFile ? '' : '\n\n注意：問卷裡還沒有「檔案」上傳題，填寫者無法上傳照片與錄音。'), ui.ButtonSet.OK);
+}
+
+// 有人送出問卷時自動執行：把回應寫進「附件」分頁，並把上傳的檔案設成公開檢視。
+function onQuestionnaireSubmit(e) {
+  if (!e || !e.namedValues) return;
+  var records = recordsFromResponse(e.namedValues);
+  var lock = LockService.getDocumentLock();
+  lock.waitLock(30000);
+  try {
+    var sheet = getSheet_(MEDIA_SHEET), headers = ensureHeaders_(sheet, MEDIA_HEADERS);
+    var ids = readObjects_(MEDIA_SHEET).map(function (m) { return m['編號']; });
+    var stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');
+    records.forEach(function (record) {
+      if (record._fileId) {
+        try { DriveApp.getFileById(record._fileId).setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (err) {}
+      }
+      record['編號'] = nextAttachmentId(ids); ids.push(record['編號']);
+      record['新增時間'] = stamp;
+      var row = buildRow(headers, record), at = sheet.getLastRow() + 1;
+      sheet.getRange(at, 1, 1, row.length).setNumberFormat('@').setValues([row]);
+    });
+  } finally {
+    lock.releaseLock();
+  }
+  try { var form = questionnaire_(); if (form) syncQuestionnaireEvents_(form); } catch (err) {}
+}
+
 /* ---------- 檢查資料 ---------- */
 
 function checkData() {
@@ -379,7 +519,7 @@ function setup() {
   ui.alert('設定完成',
     '「事件」「附件」兩個分頁已就緒。' + note +
     '\n檔案會存到雲端硬碟資料夾「' + folder.getName() + '」。' +
-    '\n\n接下來：\n1. 「年表 → 設定表單密語」\n2. 在 Apps Script 部署為網頁應用程式（見安裝說明）\n3. 「年表 → 表單網址」取得網址，交給要上傳的人' +
+    '\n\n接下來：用「年表 → 建立 Google 問卷」做一份問卷，把問卷網址交給要上傳的人。' +
     '\n\n請把這份試算表的網址提供給網站維護者：\n' + ss.getUrl(),
     ui.ButtonSet.OK);
 }
